@@ -4,7 +4,7 @@
 
 https://docs.starknet.io/quick-start/environment-setup/
 
-## Settings account
+## Setting account
 
 https://docs.starknet.io/quick-start/set-up-an-account/
 
@@ -18,5 +18,6 @@ scarb build
 ## Test smart contract
 
 ```bash
+cd contracts
 scarb test
 ```
