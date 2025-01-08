@@ -1,29 +1,62 @@
-// #[starknet::interface]
-// pub trait INFT<TContractState> {
-//     /// Increase contract balance.
-//     fn increase_balance(ref self: TContractState, amount: felt252);
-//     /// Retrieve contract balance.
-//     fn get_balance(self: @TContractState) -> felt252;
-// }
-
 #[starknet::contract]
 mod NFTStarter {
-    use core::starknet::storage::{Map, StoragePointerWriteAccess};
+    use openzeppelin::introspection::src5::SRC5Component;
+    use openzeppelin_token::erc721::{ERC721Component, ERC721HooksEmptyImpl};
+    use starknet::ContractAddress;
+
+    component!(path: ERC721Component, storage: erc721, event: ERC721Event);
+    component!(path: SRC5Component, storage: src5, event: SRC5Event);
+
+    #[abi(embed_v0)]
+    impl ERC721MixinImpl = ERC721Component::ERC721MixinImpl<ContractState>;
+    impl ERC721InternalImpl = ERC721Component::InternalImpl<ContractState>;
 
     #[storage]
     struct Storage {
-        name: felt252,
-        symbol: felt252,
-        balance: Map::<felt252, u256>,
-        owner_of: Map::<felt252, u256>, // token_id -> owner
-        balance_of: Map::<felt252, u256>, // owner -> balance
-        token_approvals: Map::<felt252, u256>, // token_id -> approved address
-        operator_approvals: Map<felt252, Map<felt252, felt252>> // owner -> operator -> approved
+        #[substorage(v0)]
+        erc721: ERC721Component::Storage,
+        #[substorage(v0)]
+        src5: SRC5Component::Storage
+    }
+
+    #[event]
+    #[derive(Drop, starknet::Event)]
+    enum Event {
+        #[flat]
+        ERC721Event: ERC721Component::Event,
+        #[flat]
+        SRC5Event: SRC5Component::Event
     }
 
     #[constructor]
-    fn constructor(ref self: ContractState, name_: felt252, symbol_: felt252) {
-        self.name.write(name_);
-        self.symbol.write(symbol_);
+    fn constructor(
+        ref self: ContractState,
+        base_uri: ByteArray,
+    ) {
+        self.erc721.initializer("NFTStarter", "NFTS", base_uri);
+    }
+
+    #[generate_trait]
+    #[abi(per_item)]
+    impl ExternalImpl of ExternalTrait {
+        #[external(v0)]
+        fn safe_mint(
+            ref self: ContractState,
+            recipient: ContractAddress,
+            token_id: u256,
+            data: Span<felt252>,
+        ) {
+            self.erc721.safe_mint(recipient, token_id, data);
+        }
+
+        #[external(v0)]
+        fn safeMint(
+            ref self: ContractState,
+            recipient: ContractAddress,
+            tokenId: u256,
+            data: Span<felt252>,
+        ) {
+            self.safe_mint(recipient, tokenId, data);
+        }
     }
 }
