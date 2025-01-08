@@ -34,11 +34,5 @@ export default function Header() {
         </div>
       </div>
     </header>
-    // <header className='sticky top-0 z-50 bg-white'>
-    //   <div className='layout flex h-14 items-center justify-between'>
-    //     <div>Home</div>
-    //     <Wallet />
-    //   </div>
-    // </header>
   );
 }

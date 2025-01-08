@@ -9,7 +9,7 @@ import "react-toastify/ReactToastify.min.css";
 import Header from '@/components/layout/Header';
 
 import { useIsSsr } from '../utils/ssr';
-import Providers from '@/components/Providers';
+import StarknetProvider from '@/components/Providers';
 
 function MyApp({ Component, pageProps }: AppProps) {
   const isSsr = useIsSsr();
@@ -18,11 +18,11 @@ function MyApp({ Component, pageProps }: AppProps) {
   }
 
   return (
-    <Providers data-theme="cupcake">
+    <StarknetProvider>
       <Header />
         <Component {...pageProps} />
       <ToastContainer position="bottom-right" newestOnTop />
-    </Providers>
+    </StarknetProvider>
   );
 }
 
