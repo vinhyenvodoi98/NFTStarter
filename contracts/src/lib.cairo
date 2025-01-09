@@ -1,6 +1,9 @@
+use starknet::ContractAddress;
+
 #[starknet::interface]
 pub trait INFTStarter<TContractState> {
     fn get_token_uri(self: @TContractState, token_id: u256) -> ByteArray;
+    fn get_owner(self: @TContractState) -> ContractAddress;
 }
 
 #[starknet::contract]
@@ -85,6 +88,10 @@ use openzeppelin::access::ownable::OwnableComponent;
     impl INFTStarterImpl of super::INFTStarter<ContractState> {
         fn get_token_uri(self: @ContractState, token_id: u256) -> ByteArray {
             self.nft_uri.read(token_id)
+        }
+
+        fn get_owner(self: @ContractState) -> ContractAddress {
+            self.ownable.owner()
         }
     }
 }
