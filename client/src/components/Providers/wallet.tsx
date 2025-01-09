@@ -1,22 +1,6 @@
-import { disconnect, useStarknetkitConnectModal } from "starknetkit";
-import { useConnect } from "@starknet-react/core"
-import { InjectedConnector } from "starknetkit/dist/injectedConnector";
-import { ArgentMobileConnector } from "starknetkit/dist/argentMobile";
+import { connect, disconnect } from "@starknet-io/get-starknet"
+
 const Wallet = () => {
-  const { connect, connectors } = useConnect()
-
-  const { starknetkitConnectModal } = useStarknetkitConnectModal({
-    connectors: connectors as any
-  })
-
-  const connectWallet = async() => {
-    const { connector } = await starknetkitConnectModal()
-    await connect({ connector })
-  }
-
-  // const disconnectWallet = async() => {
-  //   await disconnect({ clearLastWallet: true });
-  // }
 
   return (
     <div
@@ -25,9 +9,7 @@ const Wallet = () => {
         justifyContent: 'flex-end',
       }}
     >
-      <button onClick={() => connectWallet()}>
-        Connect
-      </button>
+      <button onClick={() => connect()}>Connect wallet</button>
 
       {/* <button onClick={() => disconnectWallet()}>
         Disconnect
