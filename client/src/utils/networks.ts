@@ -1,0 +1,124 @@
+import { devnet, sepolia, mainnet, Chain } from "@starknet-react/chains";
+export const chains = {
+  devnet,
+  sepolia,
+  mainnet,
+};
+
+type ChainAttributes = {
+  // color | [lightThemeColor, darkThemeColor]
+  color: string | [string, string];
+  nativeCurrencyTokenAddress?: string;
+};
+
+export type ChainWithAttributes = Chain & Partial<ChainAttributes>;
+
+export const NETWORKS_EXTRA_DATA: Record<string, ChainAttributes> = {
+  [chains.devnet.network]: {
+    color: "#b8af0c",
+  },
+  [chains.mainnet.network]: {
+    color: "#ff8b9e",
+  },
+  [chains.sepolia.network]: {
+    color: ["#5f4bb6", "#87ff65"],
+  },
+};
+/**
+ * Gives the block explorer transaction URL, returns empty string if the network is a local chain
+ */
+export function getBlockExplorerTxLink(network: string, txnHash: string) {
+  const chainNames = Object.keys(chains);
+
+  const targetChainArr = chainNames.filter((chainName) => {
+    const starknetReactChain = chains[
+      chainName as keyof typeof chains
+    ] as Chain;
+    return starknetReactChain.network === network;
+  });
+
+  if (targetChainArr.length === 0) {
+    return "";
+  }
+
+  const targetChain = targetChainArr[0] as keyof typeof chains;
+  // @ts-expect-error : ignoring error since `blockExplorers` key may or may not be present on some chains
+  const blockExplorerBaseURL = chains[targetChain].explorers?.starkscan[0];
+
+  if (!blockExplorerBaseURL) {
+    return `https://starkscan.co/tx/${txnHash}`;
+  }
+
+  return `${blockExplorerBaseURL}/tx/${txnHash}`;
+}
+
+/**
+ * Gives the block explorer URL for a given address.
+ * Defaults to Starkscan if no block explorer is configured for the network.
+ */
+export function getBlockExplorerAddressLink(network: Chain, address: string) {
+  const blockExplorerBaseURL = network.explorers?.starkscan[0];
+  if (network.network === chains.devnet.network) {
+    return `/blockexplorer/address/${address}`;
+  }
+
+  if (!blockExplorerBaseURL) {
+    return `https://starkscan.co/contract/${address}`;
+  }
+
+  return `${blockExplorerBaseURL}/contract/${address}`;
+}
+
+/**
+ * Gives the block explorer URL for a given classhash.
+ * Defaults to Starkscan if no block explorer is configured for the network.
+ */
+export function getBlockExplorerClasshashLink(network: Chain, address: string) {
+  const blockExplorerBaseURL = network.explorers?.starkscan[0];
+  if (network.network === chains.devnet.network) {
+    return `/blockexplorer/class/${address}`;
+  }
+
+  if (!blockExplorerBaseURL) {
+    return `https://starkscan.co/class/${address}`;
+  }
+
+  return `${blockExplorerBaseURL}/class/${address}`;
+}
+
+export function getBlockExplorerLink(network: Chain) {
+  switch (network) {
+    case chains.mainnet:
+      return "https://starkscan.co/";
+    default:
+    case chains.devnet:
+    case chains.sepolia:
+      return "https://sepolia.starkscan.co/";
+  }
+}
+
+const ensRegex = /.+\..+/;
+export const isENS = (address = "") => ensRegex.test(address);
+
+export const scaffoldConfig = {
+  targetNetworks: [chains.devnet],
+  // Only show the Burner Wallet when running on devnet
+  onlyLocalBurnerWallet: false,
+  rpcProviderUrl: process.env.NEXT_PUBLIC_PROVIDER_URL || "",
+  // The interval at which your front-end polls the RPC servers for new data
+  // it has no effect if you only target the local network (default is 30_000)
+  pollingInterval: 30_000,
+  /**
+   * Auto connect:
+   * 1. If the user was connected into a wallet before, on page reload reconnect automatically
+   * 2. If user is not connected to any wallet:  On reload, connect to burner wallet if burnerWallet.enabled is true && burnerWallet.onlyLocal is false
+   */
+  autoConnectTTL: 60000,
+  walletAutoConnect: true,
+}
+
+export function getTargetNetworks(): ChainWithAttributes[] {
+  return scaffoldConfig.targetNetworks.map((targetNetwork) => ({
+    ...targetNetwork,
+  }));
+}
