@@ -89,6 +89,7 @@ export const AddressInfoDropdown = ({
                 <span className=" whitespace-nowrap">Copy address</span>
               </div>
             ) : (
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               //@ts-ignore
               <CopyToClipboard
                 text={address}

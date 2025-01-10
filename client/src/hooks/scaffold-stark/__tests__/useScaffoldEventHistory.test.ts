@@ -95,15 +95,18 @@ describe("useScaffoldEventHistory", () => {
   ];
 
   beforeEach(() => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     (useDeployedContractInfo as vi.Mock).mockReturnValue({
       data: mockDeployedContractData,
       isLoading: false,
     });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     (useTargetNetwork as Vi.Mock).mockReturnValue({
       targetNetwork: mockTargetNetwork,
     });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     (useProvider as vi.Mock).mockReturnValue({
       provider: new RpcProvider({

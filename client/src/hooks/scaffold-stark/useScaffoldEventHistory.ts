@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTargetNetwork } from "./useTargetNetwork";
 import { useInterval } from "usehooks-ts";
-import { useDeployedContractInfo } from "~~/hooks/scaffold-stark";
-import scaffoldConfig from "~~/scaffold.config";
-import { replacer } from "~~/utils/scaffold-stark/common";
+import { useDeployedContractInfo } from "@/hooks/scaffold-stark";
+import { scaffoldConfig } from "@/utils/networks";
+import { replacer } from "@/utils/common";
 import {
   Abi,
   ExtractAbiEvent,
@@ -13,12 +13,12 @@ import {
   ContractAbi,
   ContractName,
   UseScaffoldEventHistoryConfig,
-} from "~~/utils/scaffold-stark/contract";
+} from "@/utils/contract";
 import { devnet } from "@starknet-react/chains";
 import { useProvider } from "@starknet-react/core";
 import { hash, RpcProvider } from "starknet";
 import { events as starknetEvents, CallData } from "starknet";
-import { parseEventData } from "~~/utils/scaffold-stark/eventsData";
+import { parseEventData } from "@/utils/eventsData";
 
 /**
  * Reads events from a deployed contract

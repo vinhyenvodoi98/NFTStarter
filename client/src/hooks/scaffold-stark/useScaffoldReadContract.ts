@@ -1,13 +1,13 @@
 import { Abi, useReadContract } from "@starknet-react/core";
 import { BlockNumber } from "starknet";
-import { useDeployedContractInfo } from "~~/hooks/scaffold-stark";
+import { useDeployedContractInfo } from "@/hooks/scaffold-stark";
 import {
   AbiFunctionOutputs,
   ContractAbi,
   ContractName,
   ExtractAbiFunctionNamesScaffold,
   UseScaffoldReadConfig,
-} from "~~/utils/scaffold-stark/contract";
+} from "@/utils/contract";
 
 export const useScaffoldReadContract = <
   TAbi extends Abi,

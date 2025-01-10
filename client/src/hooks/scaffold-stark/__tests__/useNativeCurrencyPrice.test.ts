@@ -120,6 +120,7 @@ describe("useNativeCurrencyPrice", () => {
 
   it("should handle errors in global state selectors gracefully", () => {
     vi.mocked(useGlobalState).mockImplementation(() => {
+      // eslint-disable-next-line
       return () => {};
     });
 

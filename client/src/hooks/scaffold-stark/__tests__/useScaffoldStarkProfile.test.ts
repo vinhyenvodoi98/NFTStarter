@@ -4,7 +4,7 @@ import {
   fetchProfileFromApi,
   useScaffoldStarkProfile,
 } from "../useScaffoldStarkProfile";
-import scaffoldConfig from "~~/scaffold.config";
+import { scaffoldConfig } from "@/utils/networks";
 
 const createMockResponse = (data: any): Response => {
   return {
@@ -102,6 +102,7 @@ describe("useScaffoldStarkProfile", () => {
 
     // Render the hook
     const { result } = renderHook(() =>
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       useScaffoldStarkProfile(invalidAddress),
     );
@@ -119,6 +120,7 @@ describe("useScaffoldStarkProfile", () => {
     // Override the network to a non-supported network for this test
     vi.spyOn(scaffoldConfig, "targetNetworks", "get").mockReturnValue([
       {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         network: "testnet",
       },

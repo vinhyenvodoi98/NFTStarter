@@ -103,6 +103,7 @@ export function parseGenericType(typeString: string): string[] | string {
     return content; // Return the tuple as a single string
   }
 
+  // eslint-disable-next-line
   const types = content.split(/,(?![^\(\)]*\))/);
   return types.map((type) => type.trim());
 }

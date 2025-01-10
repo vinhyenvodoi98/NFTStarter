@@ -583,6 +583,7 @@ describe("useDeployedContractInfo", () => {
 
   it("should initially set the status to LOADING", () => {
     const { result } = renderHook(() =>
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore using ts ignore so wont error in other devices
       useDeployedContractInfo("YourContract"),
     );
@@ -596,6 +597,7 @@ describe("useDeployedContractInfo", () => {
     mockIsMounted.mockReturnValue(true);
 
     const { result } = renderHook(() =>
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore using ts ignore so wont error in other devices
       useDeployedContractInfo("SomeContract"),
     );
@@ -611,6 +613,7 @@ describe("useDeployedContractInfo", () => {
     mockIsMounted.mockReturnValue(true);
 
     const { result } = renderHook(() =>
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore using ts ignore so wont error in other devices
       useDeployedContractInfo("YourContract"),
     );
@@ -630,6 +633,7 @@ describe("useDeployedContractInfo", () => {
     mockIsMounted.mockReturnValue(false); // Simulate unmount
 
     const { result } = renderHook(() =>
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore using ts ignore so wont error in other devices
       useDeployedContractInfo("YourContract"),
     );

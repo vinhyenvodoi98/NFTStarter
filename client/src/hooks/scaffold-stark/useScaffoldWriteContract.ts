@@ -3,16 +3,16 @@ import { useTargetNetwork } from "./useTargetNetwork";
 import {
   useDeployedContractInfo,
   useTransactor,
-} from "~~/hooks/scaffold-stark";
+} from "@/hooks/scaffold-stark";
 import {
   ContractAbi,
   ContractName,
   ExtractAbiFunctionNamesScaffold,
   UseScaffoldWriteConfig,
-} from "~~/utils/scaffold-stark/contract";
+} from "@/utils/contract";
 import { useSendTransaction, useNetwork, Abi } from "@starknet-react/core";
-import { notification } from "~~/utils/scaffold-stark";
 import { Contract as StarknetJsContract } from "starknet";
+import { toast } from "react-toastify";
 
 export const useScaffoldWriteContract = <
   TAbi extends Abi,
@@ -76,12 +76,12 @@ export const useScaffoldWriteContract = <
             sendTransactionInstance.sendAsync(newCalls as any[]),
           );
         } catch (e: any) {
-          throw e;
+          console.log(e);
         } finally {
           // setIsMining(false);
         }
       } else {
-        notification.error("Contract writer error. Try again.");
+        toast.error("Contract writer error. Try again.");
         return;
       }
     },

@@ -7,15 +7,15 @@ import {
   ExtractAbiFunctionNamesScaffold,
   UseScaffoldArgsParam,
   UseScaffoldWriteConfig,
-} from "~~/utils/scaffold-stark/contract";
+} from "@/utils/contract";
 import { useSendTransaction, useNetwork, Abi } from "@starknet-react/core";
 import {
   Contract as StarknetJsContract,
   InvocationsDetails,
   Call,
 } from "starknet";
-import { notification } from "~~/utils/scaffold-stark";
 import { useTransactor } from "./useTransactor";
+import { toast } from "react-toastify";
 
 function isRawCall(value: Call | any): value is Call {
   return "entrypoint" in value;
@@ -92,12 +92,12 @@ export const useScaffoldMultiWriteContract = <
           sendTransactionInstance.sendAsync(parsedCalls),
         );
       } catch (e: any) {
-        throw e;
+        console.log(e);
       } finally {
         // setIsMining(false);
       }
     } else {
-      notification.error("Contract writer error. Try again.");
+      toast.error("Contract writer error. Try again.");
       return;
     }
   };

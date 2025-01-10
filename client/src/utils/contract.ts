@@ -114,7 +114,7 @@ export enum ContractCodeStatus {
 export type GenericContract = {
   address: Address;
   abi: Abi;
-  classHash: String;
+  classHash: string;
 };
 
 export type GenericContractsDeclaration = {
@@ -453,7 +453,7 @@ export function getFunctionsByStateMutability(
 // TODO: in the future when param decoding is standardized in wallets argent and braavos we can return the object
 // new starknet react hooks (v3) doesn't use raw parse
 function tryParsingParamReturnValues(
-  fn: (x: any) => {},
+  fn: (x: any) => any,
   param: any,
   isReadArgsParsing: boolean,
 ) {
@@ -477,7 +477,7 @@ function tryParsingParamReturnValues(
   }
 }
 
-function tryParsingParamReturnObject(fn: (x: any) => {}, param: any) {
+function tryParsingParamReturnObject(fn: (x: any) => any, param: any) {
   try {
     return fn(param);
   } catch (e) {
@@ -545,7 +545,7 @@ const decodeParamsWithType = (paramType: string, param: any): unknown => {
 };
 
 const encodeParamsWithType = (
-  paramType: string = "",
+  paramType: "",
   param: any,
   isReadArgsParsing: boolean,
 ): unknown => {
@@ -568,7 +568,7 @@ const encodeParamsWithType = (
         encodedArray.push(
           ...tokens.map((item) =>
             encodeParamsWithType(
-              genericType,
+              genericType as any,
               typeof item === "string" ? item.trim() : item,
               isReadArgsParsing,
             ),
@@ -590,7 +590,7 @@ const encodeParamsWithType = (
         encodedArray.push(
           ...param.map((item) =>
             encodeParamsWithType(
-              genericType,
+              genericType as any,
               typeof item === "string" ? item.trim() : item,
               isReadArgsParsing,
             ),
@@ -614,7 +614,7 @@ const encodeParamsWithType = (
     const type = parseGenericType(paramType);
     const parsedParam = param.slice(5, param.length - 1);
     const parsedValue = encodeParamsWithType(
-      type as string,
+      type as any,
       parsedParam,
       isReadArgsParsing,
     );
@@ -704,7 +704,7 @@ const encodeParamsWithType = (
       }
 
       // encode to object (v3)
-      else if (!!isReadArgsParsing) {
+      else if (isReadArgsParsing) {
         return Object.keys(param).reduce(
           (acc, key) => {
             const parsed = encodeParamsWithType(
@@ -749,7 +749,7 @@ const encodeParamsWithType = (
 };
 
 export function parseParamWithType(
-  paramType: string,
+  paramType: any,
   param: any,
   isRead: boolean,
   isReadArgsParsing?: boolean,
@@ -812,7 +812,7 @@ function stringToObjectTuple(
 
   const obj: { [key: number]: any } = {};
   values.forEach((value, index) => {
-    obj[index] = encodeParamsWithType(types[index], value, !!isReadArgsParsing);
+    obj[index] = encodeParamsWithType(types[index] as any, value, !!isReadArgsParsing);
   });
 
   return obj;
