@@ -4,17 +4,19 @@ use starknet::ContractAddress;
 pub trait INFTStarter<TContractState> {
     fn get_token_uri(self: @TContractState, token_id: u256) -> ByteArray;
     fn get_owner(self: @TContractState) -> ContractAddress;
+    fn get_public_key_signer(self: @TContractState) -> felt252;
+    fn lazy_mint(ref self: TContractState, to: ContractAddress, uri: ByteArray, token_id: u256, msg_hash: felt252, signature: Span<felt252>);
 }
 
 #[starknet::contract]
 pub mod NFTStarter {
     use OwnableComponent::InternalTrait;
-use openzeppelin::access::ownable::OwnableComponent;
+    use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::introspection::src5::SRC5Component;
-    // use openzeppelin::account::utils::signature::is_valid_stark_signature;
+    use openzeppelin::account::utils::signature::is_valid_stark_signature;
     use openzeppelin_token::erc721::{ERC721Component, ERC721HooksEmptyImpl};
     use starknet::{get_caller_address, ContractAddress};
-    use starknet::storage::{Map, StorageMapReadAccess, StorageMapWriteAccess};
+    use starknet::storage::{Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerWriteAccess, StoragePointerReadAccess};
 
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
@@ -34,6 +36,8 @@ use openzeppelin::access::ownable::OwnableComponent;
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
         pub nft_uri: Map<u256, ByteArray>,
+        pub public_key_signer: felt252,
+        // pub is_used_sig: Map<Span<felt252>, bool>
     }
 
     #[event]
@@ -49,39 +53,18 @@ use openzeppelin::access::ownable::OwnableComponent;
 
     #[constructor]
     fn constructor(
-        ref self: ContractState
+        ref self: ContractState,
+        public_key: felt252,
     ) {
         self.erc721.initializer("NFTStarter", "NFTS", "");
+        self.public_key_signer.write(public_key);
         let owner = get_caller_address();
         self.ownable.initializer(owner);
     }
 
-    #[generate_trait]
-    #[abi(per_item)]
-    impl ExternalImpl of ExternalTrait {
-        #[external(v0)]
-        fn safe_mint(
-            ref self: ContractState,
-            recipient: ContractAddress,
-            uri: ByteArray,
-            token_id: u256,
-            data: Span<felt252>,
-        ) {
-            self.ownable.assert_only_owner();
-            self.nft_uri.write(token_id, uri);
-            self.erc721.safe_mint(recipient, token_id, data);
-        }
-
-        #[external(v0)]
-        fn safeMint(
-            ref self: ContractState,
-            recipient: ContractAddress,
-            uri: ByteArray,
-            token_id: u256,
-            data: Span<felt252>,
-        ) {
-            self.safe_mint(recipient, uri, token_id, data);
-        }
+    pub mod Errors {
+        pub const INVALID_SIGNATURE: felt252 = 'invalid signature';
+        pub const REPLAY_SIGNATURE: felt252 = 'replay signature';
     }
 
     #[abi(embed_v0)]
@@ -92,6 +75,22 @@ use openzeppelin::access::ownable::OwnableComponent;
 
         fn get_owner(self: @ContractState) -> ContractAddress {
             self.ownable.owner()
+        }
+
+        fn get_public_key_signer(self: @ContractState) -> felt252 {
+            self.public_key_signer.read()
+        }
+
+        fn lazy_mint(ref self: ContractState, to: ContractAddress, uri: ByteArray, token_id: u256, msg_hash: felt252, signature: Span<felt252>) {
+            let public_key = self.get_public_key_signer();
+
+            assert(
+                is_valid_stark_signature(msg_hash, public_key, signature),
+                Errors::INVALID_SIGNATURE
+            );
+
+            self.erc721.mint(to, token_id);
+            self.nft_uri.write(token_id, uri);
         }
     }
 }

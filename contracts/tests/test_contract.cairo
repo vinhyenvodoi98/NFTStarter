@@ -1,14 +1,23 @@
-use nftstarter::INFTStarterDispatcherTrait;
-use openzeppelin_token::erc721::interface::{IERC721MetadataDispatcher, IERC721MetadataDispatcherTrait};
+use openzeppelin_token::erc721::interface::{IERC721MetadataDispatcher, IERC721MetadataDispatcherTrait, IERC721Dispatcher, IERC721DispatcherTrait};
 use starknet::ContractAddress;
 use snforge_std::{declare, ContractClassTrait, DeclareResultTrait, start_cheat_caller_address_global, stop_cheat_caller_address_global, test_address};
-use nftstarter::INFTStarterDispatcher;
+use nftstarter::{INFTStarterDispatcherTrait, INFTStarterDispatcher};
+use snforge_std::signature::KeyPair;
+use snforge_std::signature::stark_curve::{StarkCurveKeyPairImpl, StarkCurveSignerImpl, StarkCurveVerifierImpl};
+
+// generate random for test
+fn get_key_pair() -> KeyPair<felt252, felt252> {
+    KeyPair {
+        secret_key: 1183708387333094467338972781907037627743714726817597220764976276679731789225,
+        public_key: 907904319746593147422496688023288902048747180391836133816328634772543169266
+    }
+}
 
 fn deploy_contract() -> ContractAddress {
     let contract = declare("NFTStarter").unwrap().contract_class();
-    let contract_address = contract.precalculate_address(@array![]);
+    let contract_address = contract.precalculate_address(@array![get_key_pair().public_key]);
     start_cheat_caller_address_global(test_address());
-    contract.deploy(@array![]).unwrap();
+    contract.deploy(@array![get_key_pair().public_key]).unwrap();
     stop_cheat_caller_address_global();
     contract_address
 }
@@ -24,9 +33,40 @@ fn test_metadata() {
 
     let dispatcher = INFTStarterDispatcher { contract_address };
     let owner = dispatcher.get_owner();
+    let public_key_signer = dispatcher.get_public_key_signer();
 
     assert_eq!(name, "NFTStarter");
     assert_eq!(symbol, "NFTS");
     assert_eq!(owner, test_address());
+    assert_eq!(public_key_signer, get_key_pair().public_key);
 }
 
+#[test]
+fn test_lazy_mint() {
+    let contract_address = deploy_contract();
+    let dispatcher = INFTStarterDispatcher { contract_address };
+
+    let key_pair = get_key_pair();
+
+    let msg_hash: felt252 = 0x12345678;
+    let (r, s): (felt252, felt252) = key_pair.sign(msg_hash).unwrap();
+
+    let uri  = "https://api.example.com/v1/";
+    let signature = array![r, s].span();
+    let token_id : u256 = 1;
+
+    println!("signature: {:?}", signature);
+
+    dispatcher.lazy_mint(test_address(), uri, token_id, msg_hash, signature);
+
+    let is_valid = key_pair.verify(msg_hash, (r, s));
+    assert_eq!(is_valid, true);
+
+    let token_uri = dispatcher.get_token_uri(token_id);
+    assert_eq!(token_uri, "https://api.example.com/v1/");
+
+    let dispatcher = IERC721Dispatcher { contract_address };
+    let owner = dispatcher.owner_of(token_id);
+
+    assert_eq!(owner, test_address());
+}
