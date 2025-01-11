@@ -16,7 +16,7 @@ pub mod NFTStarter {
     use openzeppelin::account::utils::signature::is_valid_stark_signature;
     use openzeppelin_token::erc721::{ERC721Component, ERC721HooksEmptyImpl};
     use starknet::{get_caller_address, ContractAddress};
-    use starknet::storage::{Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerWriteAccess, StoragePointerReadAccess};
+    use starknet::storage::{Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerWriteAccess, StoragePointerReadAccess, StoragePathEntry};
 
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
@@ -37,7 +37,7 @@ pub mod NFTStarter {
         ownable: OwnableComponent::Storage,
         pub nft_uri: Map<u256, ByteArray>,
         pub public_key_signer: felt252,
-        // pub is_used_sig: Map<Span<felt252>, bool>
+        pub sig_is_used: Map<felt252, Map<felt252, bool>>
     }
 
     #[event]
@@ -85,10 +85,16 @@ pub mod NFTStarter {
             let public_key = self.get_public_key_signer();
 
             assert(
+                !self.sig_is_used.entry(*signature.at(0)).entry(*signature.at(1)).read(),
+                Errors::REPLAY_SIGNATURE
+            );
+
+            assert(
                 is_valid_stark_signature(msg_hash, public_key, signature),
                 Errors::INVALID_SIGNATURE
             );
 
+            self.sig_is_used.entry(*signature.at(0)).entry(*signature.at(1)).write(true);
             self.erc721.mint(to, token_id);
             self.nft_uri.write(token_id, uri);
         }

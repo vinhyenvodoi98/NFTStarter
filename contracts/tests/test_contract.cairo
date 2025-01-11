@@ -2,7 +2,7 @@ use openzeppelin_token::erc721::interface::{IERC721MetadataDispatcher, IERC721Me
 use starknet::ContractAddress;
 use snforge_std::{declare, ContractClassTrait, DeclareResultTrait, start_cheat_caller_address_global, stop_cheat_caller_address_global, test_address};
 use nftstarter::{INFTStarterDispatcherTrait, INFTStarterDispatcher};
-use snforge_std::signature::KeyPair;
+use snforge_std::signature::{KeyPair, KeyPairTrait};
 use snforge_std::signature::stark_curve::{StarkCurveKeyPairImpl, StarkCurveSignerImpl, StarkCurveVerifierImpl};
 
 // generate random for test
@@ -55,8 +55,6 @@ fn test_lazy_mint() {
     let signature = array![r, s].span();
     let token_id : u256 = 1;
 
-    println!("signature: {:?}", signature);
-
     dispatcher.lazy_mint(test_address(), uri, token_id, msg_hash, signature);
 
     let is_valid = key_pair.verify(msg_hash, (r, s));
@@ -69,4 +67,43 @@ fn test_lazy_mint() {
     let owner = dispatcher.owner_of(token_id);
 
     assert_eq!(owner, test_address());
+}
+
+#[test]
+#[should_panic(expected: ('replay signature',))]
+fn test_lazy_mint_revert_with_replay_signature() {
+    let contract_address = deploy_contract();
+    let dispatcher = INFTStarterDispatcher { contract_address };
+
+    let key_pair = get_key_pair();
+
+    let msg_hash: felt252 = 0x12345678;
+    let (r, s): (felt252, felt252) = key_pair.sign(msg_hash).unwrap();
+
+    let uri  = "https://api.example.com/v1/";
+    let signature = array![r, s].span();
+    let token_id : u256 = 1;
+
+    dispatcher.lazy_mint(test_address(), uri, token_id, msg_hash, signature);
+    let owner = dispatcher.get_owner();
+    dispatcher.lazy_mint(owner, "https://api.example.com/v2/", token_id + 1, msg_hash, signature);
+}
+
+#[test]
+#[should_panic(expected: ('invalid signature',))]
+fn test_lazy_mint_revert_with_invalid_signature() {
+    let contract_address = deploy_contract();
+    let dispatcher = INFTStarterDispatcher { contract_address };
+
+    // random key pair # signer key pair
+    let key_pair = KeyPairTrait::<felt252, felt252>::generate();
+
+    let msg_hash: felt252 = 0x12345678;
+    let (r, s): (felt252, felt252) = key_pair.sign(msg_hash).unwrap();
+
+    let uri  = "https://api.example.com/v1/";
+    let signature = array![r, s].span();
+    let token_id : u256 = 2;
+
+    dispatcher.lazy_mint(test_address(), uri, token_id, msg_hash, signature);
 }
