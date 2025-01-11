@@ -59,7 +59,7 @@ export const AddressInfoDropdown = ({
       <details ref={dropdownRef} className="dropdown dropdown-end leading-3">
         <summary
           tabIndex={0}
-          className="btn bg-transparent btn-sm px-2 py-[0.35rem] dropdown-toggle gap-0 !h-auto border border-[#5c4fe5] "
+          className="btn h-12 bg-transparent btn-sm px-2 py-[0.35rem] dropdown-toggle gap-0 border border-[#5c4fe5] "
         >
           <div className="hidden [@media(min-width:412px)]:block">
             <BlockieAvatar address={address} size={28} ensImage={ensAvatar} />
