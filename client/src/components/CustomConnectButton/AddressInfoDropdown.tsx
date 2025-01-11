@@ -38,7 +38,6 @@ export const AddressInfoDropdown = ({
   const { chain } = useNetwork();
   const [showBurnerAccounts, setShowBurnerAccounts] = useState(false);
   const [selectingNetwork, setSelectingNetwork] = useState(false);
-  const { connectors, connect } = useConnect();
   const dropdownRef = useRef<HTMLDetailsElement>(null);
   const closeDropdown = () => {
     setSelectingNetwork(false);
@@ -46,7 +45,6 @@ export const AddressInfoDropdown = ({
   };
 
   useOutsideClick(dropdownRef, closeDropdown);
-
 
   const [_, setLastConnector] = useLocalStorage<{ id: string; ix?: number }>(
     "lastUsedConnector",
