@@ -5,16 +5,20 @@ import Link from 'next/link';
 export default function Header() {
   return (
     <header className='sticky top-0 z-50'>
-      <div className='layout flex items-center justify-between'>
+      <div className='container layout flex items-center justify-between'>
         <div className="navbar bg-base-200 rounded-full mt-4 px-6">
-          <div className="navbar-start">
-            <a className="btn btn-ghost text-xl">NFTStarter</a>
+          <div className="navbar-start flex gap-2">
+            <img src='/imgs/nftstarter-logo.png' className='w-10 h-10 rounded-full'/>
+            <a className="btn btn-ghost text-xl" href='/'>NFTStarter</a>
           </div>
           <div className="navbar-center">
           </div>
           <div className="navbar-end flex gap-4">
+            <Link href='/bridge'>
+              <button className='btn btn-accent w-24'>Bridge</button>
+            </Link>
             <Link href='/studio/create'>
-              <button className='btn btn-secondary'>Create</button>
+              <button className='btn btn-secondary w-24'>Create</button>
             </Link>
             <button className="btn btn-ghost btn-circle">
               <div className="indicator">

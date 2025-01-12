@@ -12,8 +12,8 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-4 items-center">
             {/* Feature 1 */}
-            <div className="p-6 h-52 transform border-base-content/20 hover:border-base-content/40 border row-span-1 col-span-1">
-
+            <div className="p-6 h-52 transform border-base-content/20 hover:border-base-content/40 border row-span-1 col-span-1 flex items-center justify-center">
+              <img src='./imgs/nftstarter-logo.png' className='w-40 h-40 rounded-full'/>
             </div>
 
             <div className="p-6 h-52 flex items-center transform border-base-content/20 hover:border-base-content/40 border row-span-1 col-span-1">
@@ -44,8 +44,9 @@ export default function HomePage() {
             </div>
 
             {/* Feature 3 */}
-            <div className="p-6 transform h-52 border-base-content/20 hover:border-base-content/40 border row-span-1 col-span-1">
-
+            <div className="transform h-52 border-base-content/20 hover:border-base-content/40 border bg-black row-span-1 col-span-1 relative">
+              <div className='absolute z-0 top-0 h-full w-full bg-cover bg-center' style={{ backgroundImage : `url('./imgs/the-creation-adam.png')`}} />
+              <h1 className="absolute p-6 bottom-0 z-10 text-5xl font-bold text-center text-primary">Bridge NFT</h1>
             </div>
 
             {/* Feature 4 */}

@@ -4,7 +4,6 @@ import CopyToClipboard from "react-copy-to-clipboard";
 import { createPortal } from "react-dom";
 import {
   ArrowLeftEndOnRectangleIcon,
-  ArrowTopRightOnSquareIcon,
   CheckCircleIcon,
   ChevronDownIcon,
   DocumentDuplicateIcon,
@@ -15,9 +14,10 @@ import { useLocalStorage } from "usehooks-ts";
 import { BlockieAvatar } from "@/components/BlockieAvatar";
 import { useOutsideClick } from "@/hooks/scaffold-stark";
 import { Address } from "@starknet-react/chains";
-import { useDisconnect, useNetwork, useConnect } from "@starknet-react/core";
+import { useDisconnect, useNetwork } from "@starknet-react/core";
 import { useScaffoldStarkProfile } from "@/hooks/scaffold-stark/useScaffoldStarkProfile";
 import { isENS } from "@/utils/networks";
+import { useRouter } from "next/router";
 
 type AddressInfoDropdownProps = {
   address: Address;
@@ -43,6 +43,8 @@ export const AddressInfoDropdown = ({
     setSelectingNetwork(false);
     dropdownRef.current?.removeAttribute("open");
   };
+
+  const router = useRouter();
 
   useOutsideClick(dropdownRef, closeDropdown);
 
@@ -77,6 +79,16 @@ export const AddressInfoDropdown = ({
           className={`dropdown-content menu z-[2] p-2 mt-2 rounded-[5px] gap-1 border border-[#5c4fe5] bg-base-100`}
         >
           <NetworkOptions hidden={!selectingNetwork} />
+          <li className={selectingNetwork ? "hidden" : ""}>
+            <button
+              className="menu-item text-secondary-content btn-sm !rounded-xl flex gap-3 py-3"
+              type="button"
+              onClick={() => router.push(`/profile/${address}`)}
+            >
+              <UserCircleIcon className="h-6 w-4 ml-2 sm:ml-0" />{" "}
+              <span>Profile</span>
+            </button>
+          </li>
           <li className={selectingNetwork ? "hidden" : ""}>
             {addressCopied ? (
               <div className="btn-sm !rounded-xl flex gap-3 py-3">

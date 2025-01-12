@@ -17,9 +17,9 @@ export default function StarknetProvider({ children }: { children: React.ReactNo
       argent(),
       braavos(),
     ],
-  });
 
-  console.log({connectors})
+    includeRecommended: "onlyIfNoConnectors",
+  });
 
   return(
     <StarknetConfig
