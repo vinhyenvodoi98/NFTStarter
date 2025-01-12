@@ -1,5 +1,12 @@
 use starknet::ContractAddress;
 
+#[derive(Drop, Serde)]
+struct MyData {
+    sender: felt252,
+    nft_address: felt252,
+    token_id: felt252
+}
+
 #[starknet::interface]
 pub trait INFTStarter<TContractState> {
     fn get_token_uri(self: @TContractState, token_id: u256) -> ByteArray;
@@ -17,6 +24,8 @@ pub mod NFTStarter {
     use openzeppelin_token::erc721::{ERC721Component, ERC721HooksEmptyImpl};
     use starknet::{get_caller_address, ContractAddress};
     use starknet::storage::{Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerWriteAccess, StoragePointerReadAccess, StoragePathEntry};
+    use core::num::traits::Zero;
+    use super::MyData;
 
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
@@ -48,7 +57,25 @@ pub mod NFTStarter {
         #[flat]
         SRC5Event: SRC5Component::Event,
         #[flat]
-        OwnableEvent: OwnableComponent::Event
+        OwnableEvent: OwnableComponent::Event,
+        ValueReceivedFromL1: ValueReceived,
+        StructReceivedFromL1: StructReceived
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct ValueReceived {
+        #[key]
+        l1_address: felt252,
+        value: felt252,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct StructReceived {
+        #[key]
+        l1_address: felt252,
+        data_sender: felt252,
+        data_nft_address: felt252,
+        data_token_id: felt252
     }
 
     #[constructor]
@@ -98,5 +125,25 @@ pub mod NFTStarter {
             self.erc721.mint(to, token_id);
             self.nft_uri.write(token_id, uri);
         }
+    }
+
+    #[l1_handler]
+    fn msg_handler_value(ref self: ContractState, from_address: felt252, value: felt252) {
+        // assert(from_address == ...);
+
+        // assert(value == 123, 'Invalid value');
+
+        self.emit(ValueReceived { l1_address: from_address, value, });
+    }
+
+    #[l1_handler]
+    fn msg_handler_struct(ref self: ContractState, from_address: felt252, data: MyData) {
+        // assert(from_address == ...);
+
+        assert(!data.sender.is_zero(), 'data.sender is invalid');
+        assert(!data.nft_address.is_zero(), 'data.nft_address is invalid');
+        assert(!data.token_id.is_zero(), 'data.token_id is invalid');
+
+        self.emit(StructReceived { l1_address: from_address, data_sender: data.sender, data_nft_address: data.nft_address, data_token_id: data.token_id });
     }
 }
