@@ -9,7 +9,7 @@ export default function Header() {
         <div className="navbar bg-base-200 rounded-full mt-4 px-6">
           <div className="navbar-start flex gap-2">
             <img src='/imgs/nftstarter-logo.png' className='w-10 h-10 rounded-full'/>
-            <a className="btn btn-ghost text-xl" href='/'>NFTStarter</a>
+            <Link className="btn btn-ghost text-xl" href='/'>NFTStarter</Link>
           </div>
           <div className="navbar-center">
           </div>
