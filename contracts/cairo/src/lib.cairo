@@ -81,9 +81,19 @@ pub mod NFTStarter {
     #[constructor]
     fn constructor(
         ref self: ContractState,
+        name: felt252,
+        name_length: usize,
+        symbol: felt252,
+        symbol_length: usize,
         public_key: felt252,
     ) {
-        self.erc721.initializer("NFTStarter", "NFTS", "");
+        let mut name_collection = "";
+        name_collection.append_word(name, name_length);
+
+        let mut symbol_collection = "";
+        symbol_collection.append_word(symbol, symbol_length);
+
+        self.erc721.initializer(name_collection, symbol_collection, "");
         self.public_key_signer.write(public_key);
         let owner = get_caller_address();
         self.ownable.initializer(owner);
