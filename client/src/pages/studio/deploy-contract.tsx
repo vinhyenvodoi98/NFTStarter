@@ -1,21 +1,42 @@
 'use client';
 
+import Loading from '@/components/Loading';
 import UploadImage from '@/components/UploadImage';
-import { useState } from 'react';
+import { uploadWeb3Storage, web3StorageLink } from "@/services/web3Storage"
+import { useEffect, useState } from 'react';
 
 export default function DeployContract() {
     const [image, setImage] = useState<File | null>(null);
     const [name, setName] = useState('');
     const [symbol, setSymbol] = useState('');
+    const [status, setStatus] = useState(0)
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
-      // Handle form submission logic, e.g., sending data to a server
-      console.log({ image, name, symbol });
+      setStatus(1) // start upload
+      const cid = await uploadWeb3Storage(image)
+      console.log(web3StorageLink(cid))
+      setStatus(2) // set contract
     };
+
+    // useEffect(() => {
+    //   const checkSuccess = async() => {
+    //     if (isSuccess) {
+    //       setStatus(3)
+    //       await delay(2000)
+    //       setStatus(0)
+    //       setPostData([])
+    //       // eslint-disable-next-line
+    //       // @ts-ignore
+    //       document.getElementById('zip')?.close()
+    //     }
+    //   }
+    //   checkSuccess()
+    // }, [isSuccess])
 
     return (
       <div className="min-h-main flex items-center justify-center">
+        <Loading state={status}/>
         <div className="container mx-auto px-4 max-w-lg">
           <h1 className="text-4xl font-bold text-gray-800 text-center mb-4">
             Let's create a smart contract for your drop.
