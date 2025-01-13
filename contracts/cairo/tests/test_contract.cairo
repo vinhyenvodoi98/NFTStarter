@@ -15,9 +15,11 @@ fn get_key_pair() -> KeyPair<felt252, felt252> {
 
 fn deploy_contract() -> ContractAddress {
     let contract = declare("NFTStarter").unwrap().contract_class();
-    let contract_address = contract.precalculate_address(@array![get_key_pair().public_key]);
+    let name: felt252 = 'NFTStarter';
+    let symbol: felt252 = 'NFTS';
+    let contract_address = contract.precalculate_address(@array![name, 10, symbol, 4, get_key_pair().public_key]);
     start_cheat_caller_address_global(test_address());
-    contract.deploy(@array![get_key_pair().public_key]).unwrap();
+    contract.deploy(@array![name, 10, symbol, 4, get_key_pair().public_key]).unwrap();
     stop_cheat_caller_address_global();
     contract_address
 }
@@ -107,3 +109,4 @@ fn test_lazy_mint_revert_with_invalid_signature() {
 
     dispatcher.lazy_mint(test_address(), uri, token_id, msg_hash, signature);
 }
+

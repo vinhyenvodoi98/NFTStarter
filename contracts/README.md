@@ -22,6 +22,13 @@ cd cairo
 scarb test
 ```
 
+## Declare contract
+
+```bash
+cd cairo
+starkli declare target/dev/nftstarter_NFTStarter.contract_class.json --network=sepolia --account ./account.json --keystore ./keystore.json
+```
+
 # Soldity contracts
 
 ```bash
