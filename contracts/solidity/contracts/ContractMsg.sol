@@ -136,7 +136,7 @@ contract ContractMsg {
     {
         _snMessaging.consumeMessageFromL2(fromAddress, payload);
 
-        // We expect the payload to contain field `a` and `b` from `MyData`.
+        // We expect the payload to contain field `a`, `b` from `MyData`.
         if (payload.length != 2) {
             revert InvalidPayload();
         }
