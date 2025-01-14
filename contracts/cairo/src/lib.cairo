@@ -2,9 +2,8 @@ use starknet::ContractAddress;
 
 #[derive(Drop, Serde)]
 struct MyData {
-    sender: felt252,
-    nft_address: felt252,
-    token_id: felt252
+    a: felt252, // starknetRecipient
+    b: felt252, // token_id
 }
 
 #[starknet::interface]
@@ -74,8 +73,7 @@ pub mod NFTStarter {
     struct StructReceived {
         #[key]
         l1_address: felt252,
-        data_sender: felt252,
-        data_nft_address: felt252,
+        data_recipient: felt252,
         data_token_id: felt252
     }
 
@@ -143,22 +141,12 @@ pub mod NFTStarter {
     }
 
     #[l1_handler]
-    fn msg_handler_value(ref self: ContractState, from_address: felt252, value: felt252) {
-        // assert(from_address == ...);
-
-        // assert(value == 123, 'Invalid value');
-
-        self.emit(ValueReceived { l1_address: from_address, value, });
-    }
-
-    #[l1_handler]
     fn msg_handler_struct(ref self: ContractState, from_address: felt252, data: MyData) {
         // assert(from_address == ...);
 
-        assert(!data.sender.is_zero(), 'data.sender is invalid');
-        assert(!data.nft_address.is_zero(), 'data.nft_address is invalid');
-        assert(!data.token_id.is_zero(), 'data.token_id is invalid');
+        assert(!data.a.is_zero(), 'recipient is invalid');
+        assert(!data.b.is_zero(), 'token_id is invalid');
 
-        self.emit(StructReceived { l1_address: from_address, data_sender: data.sender, data_nft_address: data.nft_address, data_token_id: data.token_id });
+        self.emit(StructReceived { l1_address: from_address, data_recipient: data.a, data_token_id: data.b });
     }
 }

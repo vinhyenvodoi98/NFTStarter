@@ -23,23 +23,20 @@ contract NFTBridgeEthereum is IERC721Receiver, Ownable {
     function lockNFT(
         address nftAddress,
         uint256 tokenId,
-        uint256 selector,
         uint256 starknetRecipient
-    ) external payable {
+    ) external {
         IERC721 nftContract = IERC721(nftAddress);
         // Transfer NFT to this contract (locks it)
         nftContract.transferFrom(msg.sender, address(this), tokenId);
 
         // Compose a message to send to Starknet
-        uint256[] memory payload = new uint256[](3);
-        payload[0] = uint256(uint160(msg.sender)); // Ethereum address of sender
-        payload[1] = uint256(uint160(nftAddress)); // NFT contract address
-        payload[2] = tokenId;                      // Token ID
+        uint256[] memory payload = new uint256[](2);
+        payload[0] = uint256(uint160(starknetRecipient));
+        payload[1] = tokenId;
 
         // Send message to Starknet
-        messagingContract.sendMessage{value: msg.value}(
-            starknetRecipient,
-            selector,
+        messagingContract.consumeMessageStruct(
+            uint256(uint160(msg.sender)),
             payload
         );
 
@@ -60,4 +57,3 @@ contract NFTBridgeEthereum is IERC721Receiver, Ownable {
         return this.onERC721Received.selector;
     }
 }
-
