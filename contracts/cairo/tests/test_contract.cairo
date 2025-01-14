@@ -86,8 +86,11 @@ fn test_lazy_mint_revert_with_replay_signature() {
     let signature = array![r, s].span();
     let token_id : u256 = 1;
 
+    assert_eq!(dispatcher.signature_is_used(signature), false);
     dispatcher.lazy_mint(test_address(), uri, token_id, msg_hash, signature);
+
     let owner = dispatcher.get_owner();
+    assert_eq!(dispatcher.signature_is_used(signature), true);
     dispatcher.lazy_mint(owner, "https://api.example.com/v2/", token_id + 1, msg_hash, signature);
 }
 

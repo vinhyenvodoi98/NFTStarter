@@ -13,6 +13,7 @@ pub trait INFTStarter<TContractState> {
     fn get_owner(self: @TContractState) -> ContractAddress;
     fn get_public_key_signer(self: @TContractState) -> felt252;
     fn lazy_mint(ref self: TContractState, to: ContractAddress, uri: ByteArray, token_id: u256, msg_hash: felt252, signature: Span<felt252>);
+    fn signature_is_used(self: @TContractState, signature: Span<felt252>) -> bool;
 }
 
 #[starknet::contract]
@@ -134,6 +135,10 @@ pub mod NFTStarter {
             self.sig_is_used.entry(*signature.at(0)).entry(*signature.at(1)).write(true);
             self.erc721.mint(to, token_id);
             self.nft_uri.write(token_id, uri);
+        }
+
+        fn signature_is_used(self: @ContractState, signature: Span<felt252>) -> bool {
+            self.sig_is_used.entry(*signature.at(0)).entry(*signature.at(1)).read()
         }
     }
 
