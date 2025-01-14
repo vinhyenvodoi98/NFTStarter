@@ -20,7 +20,13 @@ export function useAccount(): UseAccountResult {
         setAccountChainId(BigInt(chainId as string));
       };
 
+      const getPublicKey = async () => {
+        // const publicKey = await account.signer.pk;
+        console.log("publicKey", account.callContract("public_key", []));
+      };
+
       getChainId();
+      getPublicKey();
     }
   }, [account]);
 
