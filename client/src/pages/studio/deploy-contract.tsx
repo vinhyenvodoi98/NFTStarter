@@ -4,6 +4,7 @@ import Loading from '@/components/Loading';
 import UploadImage from '@/components/UploadImage';
 import { uploadWeb3Storage, web3StorageLink } from "@/services/web3Storage"
 import { useEffect, useState } from 'react';
+import { useAccount, useSendTransaction, useUniversalDeployerContract } from '@starknet-react/core';
 
 export default function DeployContract() {
     const [image, setImage] = useState<File | null>(null);
@@ -11,14 +12,39 @@ export default function DeployContract() {
     const [symbol, setSymbol] = useState('');
     const [status, setStatus] = useState(0)
 
+    const { udc } = useUniversalDeployerContract();
+    const { account, address } = useAccount();
+    // console.log(account)
+    // const getPublickey = async () => {
+    //   console.log(account)
+    //   const publicKey = await account?.signer.getPubKey()
+    //   console.log(publicKey)
+    // }
+
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       setStatus(1) // start upload
-      const cid = await uploadWeb3Storage(image)
-      console.log(web3StorageLink(cid))
+      // const cid = await uploadWeb3Storage(image)
+      // console.log(web3StorageLink(cid))
       setStatus(2) // set contract
+      send()
     };
 
+    const { send, isPending, error, data } = useSendTransaction({
+      calls:
+        udc && address
+          ? [
+              udc.populate("deploy_contract", [
+                "0x026d38482893836e49af76a11f0f429e63c4f656cfa2bd2442df64a3784eb7fb",
+                1, // salt
+                false, // fromZero
+                [address],
+              ]),
+            ]
+          : undefined,
+    });
+
+    console.log(isPending, error, data)
     // useEffect(() => {
     //   const checkSuccess = async() => {
     //     if (isSuccess) {
@@ -37,6 +63,7 @@ export default function DeployContract() {
     return (
       <div className="min-h-main flex items-center justify-center">
         <Loading state={status}/>
+        {/* <button onClick={()=> getPublickey()}>Test</button> */}
         <div className="container mx-auto px-4 max-w-lg">
           <h1 className="text-4xl font-bold text-gray-800 text-center mb-4">
             Let's create a smart contract for your drop.
