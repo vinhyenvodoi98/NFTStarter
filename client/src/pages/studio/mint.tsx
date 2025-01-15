@@ -3,7 +3,9 @@
 import Loading from '@/components/Loading';
 import Traits from '@/components/Traits';
 import UploadImage from '@/components/UploadImage';
+import { useAccount } from '@/hooks/useAccount';
 import { uploadWeb3Storage, web3StorageLink } from '@/services/web3Storage';
+import { useSendTransaction, useUniversalDeployerContract } from '@starknet-react/core';
 import { useState } from 'react';
 
 export default function Mint() {
@@ -14,6 +16,22 @@ export default function Mint() {
   const [externalLink, setExternalLink] = useState('');
   const [traits, setTraits] = useState<any>([])
   const [status, setStatus] = useState(0)
+  const { udc } = useUniversalDeployerContract();
+  const { address } = useAccount();
+
+  // const { send, isPending, error, data } = useSendTransaction({
+  //   calls:
+  //     udc && address
+  //       ? [
+  //           udc.populate("deploy_contract", [
+  //             ERC20_CLASS_HASH,
+  //             23, // salt
+  //             false, // fromZero
+  //             getConstructorCalldata(address),
+  //           ]),
+  //         ]
+  //       : undefined,
+  // });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,12 +41,13 @@ export default function Mint() {
     const cid = await uploadWeb3Storage(image)
     console.log(web3StorageLink(cid))
     setStatus(2) // set contract
+    // send()
   };
 
   return (
     <div className="min-h-main mt-8 flex items-center justify-center">
       <Loading state={status}/>
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 mb-8">
         <h1 className="text-4xl font-bold text-gray-800 text-start mb-4">
           Create an NFT
         </h1>
@@ -104,14 +123,14 @@ export default function Mint() {
               </label>
               <Traits setData={setTraits}/>
             </div>
-          </div>
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="w-full btn btn-primary text-white py-2 px-4 rounded-full transition"
-          >
-            Create Contract
-          </button>
+
+            <button
+              type="submit"
+              className="w-full btn btn-primary text-white py-2 px-4 rounded-full transition"
+            >
+              Create Contract
+            </button>
+            </div>
         </form>
       </div>
     </div>

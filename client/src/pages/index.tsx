@@ -9,7 +9,7 @@ export default function HomePage() {
   return (
     <Layout>
       <div className="flex items-center justify-center mt-8">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto">
           <div className="grid grid-cols-4 items-center">
             {/* Feature 1 */}
             <div className="p-6 h-52 transform border-base-content/20 hover:border-base-content/40 border row-span-1 col-span-1 flex items-center justify-center">
