@@ -9,7 +9,6 @@ struct MyData {
 #[starknet::interface]
 pub trait INFTStarter<TContractState> {
     fn get_token_uri(self: @TContractState, token_id: u256) -> ByteArray;
-    fn get_owner(self: @TContractState) -> ContractAddress;
     fn get_public_key_signer(self: @TContractState) -> felt252;
     fn lazy_mint(ref self: TContractState, to: ContractAddress, uri: ByteArray, token_id: u256, msg_hash: felt252, signature: Span<felt252>);
     fn signature_is_used(self: @TContractState, signature: Span<felt252>) -> bool;
@@ -17,24 +16,20 @@ pub trait INFTStarter<TContractState> {
 
 #[starknet::contract]
 pub mod NFTStarter {
-    use OwnableComponent::InternalTrait;
-    use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::introspection::src5::SRC5Component;
     use openzeppelin::account::utils::signature::is_valid_stark_signature;
     use openzeppelin_token::erc721::{ERC721Component, ERC721HooksEmptyImpl};
-    use starknet::{get_caller_address, ContractAddress};
+    use starknet::ContractAddress;
     use starknet::storage::{Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerWriteAccess, StoragePointerReadAccess, StoragePathEntry};
     use core::num::traits::Zero;
     use super::MyData;
 
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
-    component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
     #[abi(embed_v0)]
     impl ERC721MixinImpl = ERC721Component::ERC721MixinImpl<ContractState>;
     impl ERC721InternalImpl = ERC721Component::InternalImpl<ContractState>;
-    impl OwnableMixinImpl = OwnableComponent::OwnableMixinImpl<ContractState>;
 
     #[storage]
     struct Storage {
@@ -42,8 +37,6 @@ pub mod NFTStarter {
         erc721: ERC721Component::Storage,
         #[substorage(v0)]
         src5: SRC5Component::Storage,
-        #[substorage(v0)]
-        ownable: OwnableComponent::Storage,
         pub nft_uri: Map<u256, ByteArray>,
         pub public_key_signer: felt252,
         pub sig_is_used: Map<felt252, Map<felt252, bool>>
@@ -56,8 +49,6 @@ pub mod NFTStarter {
         ERC721Event: ERC721Component::Event,
         #[flat]
         SRC5Event: SRC5Component::Event,
-        #[flat]
-        OwnableEvent: OwnableComponent::Event,
         ValueReceivedFromL1: ValueReceived,
         StructReceivedFromL1: StructReceived
     }
@@ -94,8 +85,6 @@ pub mod NFTStarter {
 
         self.erc721.initializer(name_collection, symbol_collection, "");
         self.public_key_signer.write(public_key);
-        let owner = get_caller_address();
-        self.ownable.initializer(owner);
     }
 
     pub mod Errors {
@@ -107,10 +96,6 @@ pub mod NFTStarter {
     impl INFTStarterImpl of super::INFTStarter<ContractState> {
         fn get_token_uri(self: @ContractState, token_id: u256) -> ByteArray {
             self.nft_uri.read(token_id)
-        }
-
-        fn get_owner(self: @ContractState) -> ContractAddress {
-            self.ownable.owner()
         }
 
         fn get_public_key_signer(self: @ContractState) -> felt252 {
