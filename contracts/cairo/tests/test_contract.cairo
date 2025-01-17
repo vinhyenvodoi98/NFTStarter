@@ -34,12 +34,10 @@ fn test_metadata() {
     let symbol = dispatcher.symbol();
 
     let dispatcher = INFTStarterDispatcher { contract_address };
-    let owner = dispatcher.get_owner();
     let public_key_signer = dispatcher.get_public_key_signer();
 
     assert_eq!(name, "NFTStarter");
     assert_eq!(symbol, "NFTS");
-    assert_eq!(owner, test_address());
     assert_eq!(public_key_signer, get_key_pair().public_key);
 }
 
@@ -89,9 +87,8 @@ fn test_lazy_mint_revert_with_replay_signature() {
     assert_eq!(dispatcher.signature_is_used(signature), false);
     dispatcher.lazy_mint(test_address(), uri, token_id, msg_hash, signature);
 
-    let owner = dispatcher.get_owner();
     assert_eq!(dispatcher.signature_is_used(signature), true);
-    dispatcher.lazy_mint(owner, "https://api.example.com/v2/", token_id + 1, msg_hash, signature);
+    dispatcher.lazy_mint(test_address(), "https://api.example.com/v2/", token_id + 1, msg_hash, signature);
 }
 
 #[test]
