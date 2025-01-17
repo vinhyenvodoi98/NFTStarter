@@ -4,10 +4,10 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./ContractMsg.sol";
+import "./starknet/StarknetMessaging.sol";
 
 contract NFTBridgeEthereum is IERC721Receiver, Ownable {
-    ContractMsg public messagingContract;
+    StarknetMessaging public messagingContract;
 
     event NFTLocked(
         address indexed user,
@@ -17,7 +17,7 @@ contract NFTBridgeEthereum is IERC721Receiver, Ownable {
     );
 
     constructor(address _messagingContract) Ownable(msg.sender) {
-        messagingContract = ContractMsg(_messagingContract);
+        messagingContract = StarknetMessaging(_messagingContract);
     }
 
     function lockNFT(
@@ -27,16 +27,17 @@ contract NFTBridgeEthereum is IERC721Receiver, Ownable {
         uint256 l2ContractAddress,
         uint256 starknetRecipient
     ) external payable {
+        require(msg.value >= 20000, "Incorrect fee");
         IERC721 nftContract = IERC721(nftAddress);
         nftContract.transferFrom(msg.sender, address(this), tokenId);
 
         // Compose a message to send to Starknet
         uint256[] memory payload = new uint256[](2);
-        payload[0] = uint256(uint160(starknetRecipient));
+        payload[0] = starknetRecipient;
         payload[1] = tokenId;
 
         // Send message to Starknet
-        messagingContract.sendMessage{value: 30000}(
+        messagingContract.sendMessageToL2{value: msg.value}(
             l2ContractAddress,
             selector,
             payload
@@ -47,7 +48,7 @@ contract NFTBridgeEthereum is IERC721Receiver, Ownable {
     }
 
     function setStarknetMessaging(address _starknetMessaging) external onlyOwner {
-        messagingContract = ContractMsg(_starknetMessaging);
+        messagingContract = StarknetMessaging(_starknetMessaging);
     }
 
     function onERC721Received(
