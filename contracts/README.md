@@ -58,3 +58,9 @@ yarn hardhat ignition deploy ignition/modules/NFTStarter.ts --network <NETWORK>
 ```bash
 yarn hardhat ignition deploy ignition/modules/NFTBridgeEthereum.ts --network <NETWORK>
 ```
+
+## Bridge NFT from L1 to L2
+
+```bash
+yarn ts-node scripts/sendL1toL2.ts
+```

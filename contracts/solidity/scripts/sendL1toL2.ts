@@ -1,4 +1,4 @@
-import { ethers, getAddress, Wallet } from 'ethers'
+import { ethers, getAddress, Wallet, parseEther } from 'ethers'
 import {abi as ERC721ABI } from '../artifacts/contracts/NFTStarter.sol/NFTStarter.json'
 import {abi as BridgeABI } from '../artifacts/contracts/NFTBridgeEthereum.sol/NFTBridgeEthereum.json';
 
@@ -16,7 +16,14 @@ async function main() {
 
     const bridge = new ethers.Contract(BridgeAddress, BridgeABI, signer);
 
-    await bridge.lockNFT(nftAddress, 1, selector, l2Address, l2receiver, { value: 30000 });
+    let tokenID = 0;
+
+    // approve the bridge to transfer the NFT
+    const nft = new ethers.Contract(nftAddress, ERC721ABI, signer);
+    await nft.approve(BridgeAddress, tokenID);
+
+    const tx = await bridge.lockNFT(nftAddress, tokenID, selector, l2Address, l2receiver, { value: parseEther("0.0001"), gasLimit: 1000000n });
+    console.log(tx.hash);
 }
 
 main()
