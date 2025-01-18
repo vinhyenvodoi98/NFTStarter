@@ -1,23 +1,19 @@
 'use client';
 
 import Loading from '@/components/Loading';
-import Traits from '@/components/Traits';
-import UploadImage from '@/components/UploadImage';
 import { useAccount } from '@/hooks/useAccount';
 import { uploadWeb3Storage, web3StorageLink } from '@/services/web3Storage';
+import { shortenAddress } from '@/utils/string';
 import { useSendTransaction, useUniversalDeployerContract } from '@starknet-react/core';
-import { useState } from 'react';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 
 export default function Mint() {
-  const [image, setImage] = useState<File | null>(null);
-  const [collection, setCollection] = useState('');
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [externalLink, setExternalLink] = useState('');
-  const [traits, setTraits] = useState<any>([])
+  const [nft, setNft] = useState<any>()
   const [status, setStatus] = useState(0)
-  const { udc } = useUniversalDeployerContract();
   const { address } = useAccount();
+  const router = useRouter()
+  const { collection, tokenid } = router.query;
 
   // const { send, isPending, error, data } = useSendTransaction({
   //   calls:
@@ -33,13 +29,20 @@ export default function Mint() {
   //       : undefined,
   // });
 
+  useEffect(() => {
+    const getNFT = async (collection: string) => {
+      const bgResponse = await fetch(`/api/nft?contractAddress=${collection}&tokenId=${tokenid}`);
+      const response = await bgResponse.json()
+      setNft(response.token)
+    }
+
+    if(collection) getNFT(collection as string)
+  }, [collection])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Handle form submission logic, e.g., sending data to a server
-    console.log({ image, collection, name, description });
     setStatus(1) // start upload
-    const cid = await uploadWeb3Storage(image)
-    console.log(web3StorageLink(cid))
     setStatus(2) // set contract
     // send()
   };
@@ -52,20 +55,22 @@ export default function Mint() {
           Claim your NFT
         </h1>
         <div className="card bg-base-100 w-96 shadow-xl mb-8">
-          <figure>
-            <img
-              src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
-              alt="Shoes" />
+          <figure className='h-80'>
+            {nft ? <img
+              src={`${nft.image}`}
+              alt="Shoes"
+              className='h-full w-full object-contain' /> :
+              <div className='skeleton w-full h-full'></div>
+            }
           </figure>
           <div className="card-body">
             <h2 className="card-title">
-              Shoes!
-              <div className="badge badge-secondary">NEW</div>
+              {nft ? nft.name : <div className='skeleton w-36 h-8'/>}
             </h2>
-            <p>If a dog chews shoes whose shoes does he choose?</p>
-            <div className="card-actions justify-end">
-              <div className="badge badge-outline">Fashion</div>
-              <div className="badge badge-outline">Products</div>
+            <p>{nft ? nft.description : <div className='skeleton w-full h-20'></div>}</p>
+            <div className="card-actions justify-between">
+              <div>{collection && shortenAddress(collection as string)}</div>
+              <div className="badge badge-outline">{nft ? nft.id : <div className='skeleton w-10 h-3'/>}</div>
             </div>
           </div>
         </div>

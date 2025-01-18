@@ -5,6 +5,8 @@ import UploadImage from '@/components/UploadImage';
 import { uploadWeb3Storage, web3StorageLink } from "@/services/web3Storage"
 import { useEffect, useState } from 'react';
 import { useAccount, useSendTransaction, useUniversalDeployerContract } from '@starknet-react/core';
+import { Collections } from '@/interfaces/Collections'
+import classhash from '../../../../contracts/cairo/classhash.json'
 
 export default function DeployContract() {
     const [image, setImage] = useState<File | null>(null);
@@ -25,17 +27,35 @@ export default function DeployContract() {
       e.preventDefault();
       setStatus(1) // start upload
       // const cid = await uploadWeb3Storage(image)
-      // console.log(web3StorageLink(cid))
       setStatus(2) // set contract
-      send()
+      // send()
+      // await uploadContractData(web3StorageLink(cid))
+      await uploadContractData("")
+      setStatus(0)
     };
+
+    const uploadContractData = async ({cid}:any) => {
+      const body: Collections = {
+        creator: address as string,
+        image: "sssss",
+        name: name,
+        symbol: symbol,
+        contractAddress: ""
+      }
+      const bgResponse = await fetch('/api/collections', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+
+      console.log(bgResponse)
+    }
 
     const { send, isPending, error, data } = useSendTransaction({
       calls:
         udc && address
           ? [
               udc.populate("deploy_contract", [
-                "0x026d38482893836e49af76a11f0f429e63c4f656cfa2bd2442df64a3784eb7fb",
+                classhash.class_hash,
                 1, // salt
                 false, // fromZero
                 [address],
@@ -44,7 +64,6 @@ export default function DeployContract() {
           : undefined,
     });
 
-    console.log(isPending, error, data)
     // useEffect(() => {
     //   const checkSuccess = async() => {
     //     if (isSuccess) {

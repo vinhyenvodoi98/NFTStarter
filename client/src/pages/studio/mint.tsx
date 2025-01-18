@@ -6,18 +6,23 @@ import UploadImage from '@/components/UploadImage';
 import { useAccount } from '@/hooks/useAccount';
 import { uploadWeb3Storage, web3StorageLink } from '@/services/web3Storage';
 import { useSendTransaction, useUniversalDeployerContract } from '@starknet-react/core';
-import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 
 export default function Mint() {
   const [image, setImage] = useState<File | null>(null);
-  const [collection, setCollection] = useState('');
+  const [collections, setCollections] = useState([]);
+  const [collection, setCollection] = useState<any>();
   const [name, setName] = useState('');
+  const [tokenId, setTokenId] = useState<number>(1);
   const [description, setDescription] = useState('');
   const [externalLink, setExternalLink] = useState('');
   const [traits, setTraits] = useState<any>([])
   const [status, setStatus] = useState(0)
   const { udc } = useUniversalDeployerContract();
   const { address } = useAccount();
+  const router = useRouter();
 
   // const { send, isPending, error, data } = useSendTransaction({
   //   calls:
@@ -33,15 +38,58 @@ export default function Mint() {
   //       : undefined,
   // });
 
+  const uploadNFTData = async ({cid}:any) => {
+    const body = {
+      contractAddress: collection.contractAddress,
+      token: {
+        id: tokenId,
+        name,
+        image: "cid",
+        description,
+        traits,
+        externalLink,
+        isClaimed: false,
+      }
+    }
+    const bgResponse = await fetch('/api/nft', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+
+    console.log(bgResponse.status)
+  }
+
+  useEffect(() => {
+    const getUserCollection = async (address: `0x${string}`) => {
+      const bgResponse = await fetch(`/api/collections?creator=${address}`);
+      const response = await bgResponse.json()
+      setCollections(response.collections)
+    }
+
+    if(address) getUserCollection(address)
+  }, [address])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Handle form submission logic, e.g., sending data to a server
-    console.log({ image, collection, name, description });
     setStatus(1) // start upload
-    const cid = await uploadWeb3Storage(image)
-    console.log(web3StorageLink(cid))
+    // const cid = await uploadWeb3Storage(image)
+    // console.log(web3StorageLink(cid))
     setStatus(2) // set contract
     // send()
+    await uploadNFTData("")
+    setStatus(0)
+  };
+
+  const handleCollection = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedValue = e.target.value;
+
+    if (selectedValue === 'Create new Collection') {
+      router.push('/studio/deploy-contract'); // Redirect nếu chọn "Create new Collection"
+    } else {
+      const selectedObject = JSON.parse(selectedValue);
+      setCollection(selectedObject)
+    }
   };
 
   return (
@@ -66,14 +114,17 @@ export default function Mint() {
               <label htmlFor="collection" className="block text-gray-700 font-semibold mb-2">
                 Collection *
               </label>
-              <input
-                type="text"
-                id="collection"
-                className="input input-bordered block w-full text-gray-700 border border-gray-300"
-                value={name}
-                onChange={(e) => setCollection(e.target.value)}
-                placeholder="Enter contract name"
-              />
+              <select defaultValue="Select Collection" className="select w-full border border-gray-300" onChange={handleCollection}>
+                <option disabled={true}>Select Collection</option>
+                {collections.map((value:any,index) => (
+                  <option key={index} value={JSON.stringify(value)}>{value.name}</option>
+                ))}
+                <option>
+                  <Link href={'/studio/deploy-contract'}>
+                    Create new Collection
+                  </Link>
+                </option>
+              </select>
             </div>
 
             <div className="mb-4">
@@ -86,6 +137,20 @@ export default function Mint() {
                 className="input input-bordered block w-full text-gray-700 border border-gray-300 p-2"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                placeholder="Enter NFT name"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label htmlFor="name" className="block text-gray-700 font-semibold mb-2">
+                TokenID *
+              </label>
+              <input
+                type="number"
+                id="name"
+                className="input input-bordered block w-full text-gray-700 border border-gray-300 p-2"
+                value={tokenId}
+                onChange={(e) => setTokenId(Number(e.target.value))}
                 placeholder="Enter contract name"
               />
             </div>
@@ -128,7 +193,7 @@ export default function Mint() {
               type="submit"
               className="w-full btn btn-primary text-white py-2 px-4 rounded-full transition"
             >
-              Create Contract
+              Mint
             </button>
             </div>
         </form>
