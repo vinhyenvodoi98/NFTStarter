@@ -4,9 +4,10 @@ import Loading from '@/components/Loading';
 import UploadImage from '@/components/UploadImage';
 import { uploadWeb3Storage, web3StorageLink } from "@/services/web3Storage"
 import { useEffect, useState } from 'react';
-import { useAccount, useSendTransaction, useUniversalDeployerContract } from '@starknet-react/core';
+import { useAccount, useSendTransaction, useUniversalDeployerContract} from '@starknet-react/core';
 import { Collections } from '@/interfaces/Collections'
 import classhash from '../../../../contracts/cairo/classhash.json'
+import { CustomConnectButton } from '@/components/CustomConnectButton';
 
 export default function DeployContract() {
     const [image, setImage] = useState<File | null>(null);
@@ -26,18 +27,19 @@ export default function DeployContract() {
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       setStatus(1) // start upload
-      // const cid = await uploadWeb3Storage(image)
+      const cid = await uploadWeb3Storage(image)
       setStatus(2) // set contract
       // send()
-      // await uploadContractData(web3StorageLink(cid))
-      await uploadContractData("")
-      setStatus(0)
+      await uploadContractData(web3StorageLink(cid))
+      // if(isPending === false && status===2){
+      //   setStatus(0)
+      // }
     };
 
     const uploadContractData = async ({cid}:any) => {
       const body: Collections = {
         creator: address as string,
-        image: "sssss",
+        image: cid,
         name: name,
         symbol: symbol,
         contractAddress: ""
@@ -49,20 +51,35 @@ export default function DeployContract() {
 
       console.log(bgResponse)
     }
-
     const { send, isPending, error, data } = useSendTransaction({
       calls:
         udc && address
           ? [
               udc.populate("deploy_contract", [
                 classhash.class_hash,
-                1, // salt
+                2, // salt
                 false, // fromZero
-                [address],
+                [name, name.length, symbol, symbol.length, '0x4b7abb48d891de884d5e4fb7579b88833ef99d621f4a5aaa036830e70e7dcfb'], // test public key
               ]),
             ]
           : undefined,
     });
+
+    // const {
+    //   data,
+    //   error,
+    //   fetchNextPage,
+    //   hasNextPage,
+    //   isFetchingNextPage,
+    // } = useEvent(
+    //   {
+    //     address: "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+    //     eventName: "Transfer",
+    //     fromBlock: 442920,
+    //     toBlock: "latest",
+    //     pageSize: 10
+    //   }
+    // );
 
     // useEffect(() => {
     //   const checkSuccess = async() => {
@@ -129,12 +146,14 @@ export default function DeployContract() {
             </div>
 
             {/* Submit Button */}
-            <button
-              type="submit"
-              className="w-full btn btn-primary text-white py-2 px-4 rounded-full transition"
-            >
-              Create
-            </button>
+            {address ?  <button
+                type="submit"
+                className="w-full btn btn-primary text-white py-2 px-4 rounded-full transition"
+              >
+                Create
+              </button> :
+              <CustomConnectButton />
+            }
           </form>
         </div>
       </div>

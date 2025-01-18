@@ -1,5 +1,6 @@
 'use client';
 
+import { CustomConnectButton } from '@/components/CustomConnectButton';
 import Loading from '@/components/Loading';
 import Traits from '@/components/Traits';
 import UploadImage from '@/components/UploadImage';
@@ -189,12 +190,15 @@ export default function Mint() {
               <Traits setData={setTraits}/>
             </div>
 
-            <button
-              type="submit"
-              className="w-full btn btn-primary text-white py-2 px-4 rounded-full transition"
-            >
-              Mint
-            </button>
+            {address ? <button
+                type="submit"
+                className="w-full btn btn-primary text-white py-2 px-4 rounded-full transition"
+              >
+                Mint
+              </button>
+            :
+              <CustomConnectButton />
+            }
             </div>
         </form>
       </div>
