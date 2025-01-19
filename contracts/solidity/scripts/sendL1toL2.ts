@@ -16,13 +16,13 @@ async function main() {
 
     const bridge = new ethers.Contract(BridgeAddress, BridgeABI, signer);
 
-    let tokenID = 0;
+    let tokenID = 2;
 
     // approve the bridge to transfer the NFT
-    const nft = new ethers.Contract(nftAddress, ERC721ABI, signer);
-    await nft.approve(BridgeAddress, tokenID);
+    // const nft = new ethers.Contract(nftAddress, ERC721ABI, signer);
+    // await nft.approve(BridgeAddress, tokenID);
 
-    const tx = await bridge.lockNFT(nftAddress, tokenID, selector, l2Address, l2receiver, { value: parseEther("0.0001"), gasLimit: 1000000n });
+    const tx = await bridge.lockNFT(nftAddress, tokenID, selector, l2Address, l2receiver, { value: parseEther("0.00001"), gasLimit: 1000000n });
     console.log(tx.hash);
 }
 
