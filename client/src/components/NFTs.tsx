@@ -7,8 +7,8 @@ export default function NFTs({collections}:any) {
     <div className="grid grid-cols-5 gap-4">
       {collections.map((value:any) =>
         value.tokens.map((nft:any,index:any) =>
-          <div onClick={()=> route.push(`/claim/${value.contractAddress}/${nft.id}`)}>
-            <Card key={index} image={nft.image} name={nft.name} description={`#${nft.id}`}/>
+          <div key={index} onClick={()=> route.push(`/claim/${value.contractAddress}/${nft.id}`)}>
+            <Card image={nft.image} name={nft.name} description={`#${nft.id}`}/>
           </div>
         )
       )}
