@@ -55,7 +55,7 @@ export default function DeployContract() {
                 classhash.class_hash,
                 2, // salt
                 false, // fromZero
-                [name, name.length, symbol, symbol.length, '0x4b7abb48d891de884d5e4fb7579b88833ef99d621f4a5aaa036830e70e7dcfb'], // test public key
+                [name, name.length, symbol, symbol.length, process.env.NEXT_PUBLIC_LAZY_MINT_PUBLIC_KEY],
               ]),
             ]
           : undefined,

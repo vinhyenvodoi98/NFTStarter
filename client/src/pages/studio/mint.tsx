@@ -6,13 +6,9 @@ import Traits from '@/components/Traits';
 import UploadImage from '@/components/UploadImage';
 import { useAccount } from '@/hooks/useAccount';
 import { uploadWeb3Storage, web3StorageLink } from '@/services/web3Storage';
-import { useSendTransaction, useUniversalDeployerContract } from '@starknet-react/core';
-import { v4 as uuidv4 } from 'uuid';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { useSignTypedData } from "@starknet-react/core";
-import { shortString } from "starknet";
 
 export default function Mint() {
   const [image, setImage] = useState<File | null>(null);
@@ -24,37 +20,10 @@ export default function Mint() {
   const [externalLink, setExternalLink] = useState('');
   const [traits, setTraits] = useState<any>([])
   const [status, setStatus] = useState(0)
-  const { address } = useAccount();
+  const { account, address } = useAccount();
   const router = useRouter();
 
-  const { signTypedDataAsync, data, error } = useSignTypedData({
-    params: {
-      message: {
-        contractAddress: collection ? collection.contractAddress : '',
-        id: tokenId,
-        from: address,
-      },
-      types: {
-        StarkNetDomain: [
-          { name: "name", type: "string" },
-          { name: "version", type: "string" },
-          { name: "chainId", type: "string" },
-        ],
-        Validate: [
-          { name: "id", type: "string" },
-          { name: "from", type: "string" },
-        ],
-      },
-      primaryType: "Validate",
-      domain: {
-        name: process.env.NEXT_PUBLIC_DOMAIN,
-        version: "1",
-        chainId: shortString.encodeShortString("SN_SEPOLIA"),
-      },
-    },
-  });
-
-  const uploadNFTData = async ({image, metadata, msg_hash, signature}:any) => {
+  const uploadNFTData = async ({image, metadata}:any) => {
     const body = {
       contractAddress: collection.contractAddress,
       token: {
@@ -64,9 +33,7 @@ export default function Mint() {
         description,
         traits,
         externalLink,
-        msg_hash,
         metadata,
-        signature,
         isClaimed: false,
       }
     }
@@ -107,11 +74,9 @@ export default function Mint() {
     const files = new File([stringData], "metadata.json")
     const cid = await uploadWeb3Storage(files)
     setStatus(2) // set contract
-    await signTypedDataAsync()
     await uploadNFTData({
-      imageCid,
-      metadata: cid,
-      signature: data
+      image: web3StorageLink(imageCid),
+      metadata: web3StorageLink(cid),
     })
     setStatus(0)
   };

@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/services/mongodb";
-import { ObjectId } from "mongodb";
+import { stringToBigNumberishArray } from "@/utils/string";
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { ec, WeierstrassSignatureType } from 'starknet';
 
 const { db } = await connectToDatabase();
 
@@ -12,17 +13,21 @@ export default async function handler(
     try {
       try {
         const data = JSON.parse(req.body)
+        const msg_hash = "0x123456"
+        const signature: WeierstrassSignatureType = ec.starkCurve.sign(msg_hash, process.env.NEXT_PUBLIC_LAZY_MINT_PUBLIC_KEY as string);
+
+        data.token.msg_hash = msg_hash
+        data.token.signature = signature
         const result = await db.collection("collections").updateOne(
           {
             contractAddress: data.contractAddress ,
             "tokens.id": data.token.id
           },
           {
-            $set: { "tokens.$": data.token, updatedAt: new Date() } // Nếu tồn tại thì thay thế
+            $set: { "tokens.$": data.token, updatedAt: new Date() }
           }
         );
         if (result.matchedCount === 0) {
-          // Nếu token chưa tồn tại, thêm mới vào mảng
           const addResult = await db.collection("collections").updateOne(
             { contractAddress: data.contractAddress },
             {
@@ -47,9 +52,7 @@ export default async function handler(
     }
   } else if (req.method === 'GET') {
     try {
-      const { contractAddress, tokenId, isClaim } = req.query;
-
-      console.log(isClaim)
+      const { contractAddress, tokenId } = req.query;
 
       try {
         const collection = await db.collection("collections").findOne(
