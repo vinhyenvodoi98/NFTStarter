@@ -1,14 +1,18 @@
 'use client';
 
+import { CustomConnectButton } from '@/components/CustomConnectButton';
 import Loading from '@/components/Loading';
 import Traits from '@/components/Traits';
 import UploadImage from '@/components/UploadImage';
 import { useAccount } from '@/hooks/useAccount';
 import { uploadWeb3Storage, web3StorageLink } from '@/services/web3Storage';
 import { useSendTransaction, useUniversalDeployerContract } from '@starknet-react/core';
+import { v4 as uuidv4 } from 'uuid';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { useSignTypedData } from "@starknet-react/core";
+import { shortString } from "starknet";
 
 export default function Mint() {
   const [image, setImage] = useState<File | null>(null);
@@ -20,34 +24,49 @@ export default function Mint() {
   const [externalLink, setExternalLink] = useState('');
   const [traits, setTraits] = useState<any>([])
   const [status, setStatus] = useState(0)
-  const { udc } = useUniversalDeployerContract();
   const { address } = useAccount();
   const router = useRouter();
 
-  // const { send, isPending, error, data } = useSendTransaction({
-  //   calls:
-  //     udc && address
-  //       ? [
-  //           udc.populate("deploy_contract", [
-  //             ERC20_CLASS_HASH,
-  //             23, // salt
-  //             false, // fromZero
-  //             getConstructorCalldata(address),
-  //           ]),
-  //         ]
-  //       : undefined,
-  // });
+  const { signTypedDataAsync, data, error } = useSignTypedData({
+    params: {
+      message: {
+        contractAddress: collection ? collection.contractAddress : '',
+        id: tokenId,
+        from: address,
+      },
+      types: {
+        StarkNetDomain: [
+          { name: "name", type: "string" },
+          { name: "version", type: "string" },
+          { name: "chainId", type: "string" },
+        ],
+        Validate: [
+          { name: "id", type: "string" },
+          { name: "from", type: "string" },
+        ],
+      },
+      primaryType: "Validate",
+      domain: {
+        name: process.env.NEXT_PUBLIC_DOMAIN,
+        version: "1",
+        chainId: shortString.encodeShortString("SN_SEPOLIA"),
+      },
+    },
+  });
 
-  const uploadNFTData = async ({cid}:any) => {
+  const uploadNFTData = async ({image, metadata, msg_hash, signature}:any) => {
     const body = {
       contractAddress: collection.contractAddress,
       token: {
         id: tokenId,
         name,
-        image: "cid",
+        image,
         description,
         traits,
         externalLink,
+        msg_hash,
+        metadata,
+        signature,
         isClaimed: false,
       }
     }
@@ -73,11 +92,27 @@ export default function Mint() {
     e.preventDefault();
     // Handle form submission logic, e.g., sending data to a server
     setStatus(1) // start upload
-    // const cid = await uploadWeb3Storage(image)
-    // console.log(web3StorageLink(cid))
+    const imageCid = await uploadWeb3Storage(image)
+    const metadata = {
+      token: {
+        id: tokenId,
+        name,
+        image: web3StorageLink(imageCid),
+        description,
+        traits,
+        externalLink,
+      }
+    }
+    const stringData = JSON.stringify(metadata)
+    const files = new File([stringData], "metadata.json")
+    const cid = await uploadWeb3Storage(files)
     setStatus(2) // set contract
-    // send()
-    await uploadNFTData("")
+    await signTypedDataAsync()
+    await uploadNFTData({
+      imageCid,
+      metadata: cid,
+      signature: data
+    })
     setStatus(0)
   };
 
@@ -189,12 +224,16 @@ export default function Mint() {
               <Traits setData={setTraits}/>
             </div>
 
-            <button
-              type="submit"
-              className="w-full btn btn-primary text-white py-2 px-4 rounded-full transition"
-            >
-              Mint
-            </button>
+            {address ?
+              <button
+                type="submit"
+                className="w-full btn btn-primary text-white py-2 px-4 rounded-full transition"
+              >
+                Mint
+              </button>
+              :
+              <CustomConnectButton/>
+            }
             </div>
         </form>
       </div>

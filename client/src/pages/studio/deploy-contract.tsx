@@ -16,6 +16,7 @@ export default function DeployContract() {
     const [symbol, setSymbol] = useState('');
     const [status, setStatus] = useState(0)
     const [cid, setCid] = useState('')
+    const [isSuccess, setIsSuccess] = useState(false)
 
     const { udc } = useUniversalDeployerContract();
     const { account, address } = useAccount();
@@ -70,7 +71,7 @@ export default function DeployContract() {
         toast.success(`Deploy contract successfully: ${contractAddress}`)
         setStatus(0)
       }
-      if(trxdata && trxdata.events[0]) {
+      if(trxdata && trxdata.events[0] && status === 2) {
         uploadData(cid, trxdata.events[0].from_address)
       }
     }, [trxdata])
