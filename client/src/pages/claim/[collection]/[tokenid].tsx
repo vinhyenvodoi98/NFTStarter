@@ -1,12 +1,46 @@
 'use client';
 
+import { CustomConnectButton } from '@/components/CustomConnectButton';
 import Loading from '@/components/Loading';
+import SimpleLoading from '@/components/SimpleLoading';
 import { useAccount } from '@/hooks/useAccount';
 import { uploadWeb3Storage, web3StorageLink } from '@/services/web3Storage';
-import { shortenAddress } from '@/utils/string';
-import { useSendTransaction, useUniversalDeployerContract } from '@starknet-react/core';
+import { convertToBigNumbers, shortenAddress } from '@/utils/string';
+import { useContract, useSendTransaction, useUniversalDeployerContract } from '@starknet-react/core';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import type { Abi } from "starknet";
+
+const abi = [
+  {
+    type: "function",
+    name: "lazy_mint",
+    state_mutability: "external",
+    inputs: [
+      {
+        name: "to",
+        type: "core::starknet::contract_address::ContractAddress"
+      },
+      {
+        name: "uri",
+        type: "core::byte_array::ByteArray"
+      },
+      {
+        name: "token_id",
+        type: "core::integer::u256"
+      },
+      {
+        name: "msg_hash",
+        type: "core::felt252"
+      },
+      {
+        name: "signature",
+        type: "core::array::Span::<core::felt252>"
+      }
+    ],
+    outputs: []
+  },
+] as const satisfies Abi;
 
 export default function Mint() {
   const [nft, setNft] = useState<any>()
@@ -14,20 +48,7 @@ export default function Mint() {
   const { address } = useAccount();
   const router = useRouter()
   const { collection, tokenid } = router.query;
-
-  // const { send, isPending, error, data } = useSendTransaction({
-  //   calls:
-  //     udc && address
-  //       ? [
-  //           udc.populate("deploy_contract", [
-  //             ERC20_CLASS_HASH,
-  //             23, // salt
-  //             false, // fromZero
-  //             getConstructorCalldata(address),
-  //           ]),
-  //         ]
-  //       : undefined,
-  // });
+  const encoder = new TextEncoder();
 
   useEffect(() => {
     const getNFT = async (collection: string) => {
@@ -39,17 +60,29 @@ export default function Mint() {
     if(collection) getNFT(collection as string)
   }, [collection])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle form submission logic, e.g., sending data to a server
-    setStatus(1) // start upload
-    setStatus(2) // set contract
-    // send()
+  const { contract } = useContract({
+    abi: abi,
+    address: collection ? collection as `0x${string}` : "0x",
+  });
+
+  const { sendAsync, error } = useSendTransaction({
+    calls:
+      contract && address && nft
+        ? [contract.populate("lazy_mint", [address, "123456", nft.id, nft.msg_hash, nft.signature])]
+        : undefined,
+  });
+
+  const handleSubmit = async () => {
+    setStatus(1)
+    await sendAsync()
+    setStatus(0)
   };
+
+  console.log(nft)
 
   return (
     <div className="min-h-main flex items-center justify-center">
-      <Loading state={status}/>
+      <SimpleLoading state={status} description='Minting'/>
       <div className="container mx-auto px-4 max-w-lg flex flex-col items-center">
         <h1 className="text-4xl font-bold text-gray-800 text-center mb-8">
           Claim your NFT
@@ -74,9 +107,13 @@ export default function Mint() {
             </div>
           </div>
         </div>
-        <div className='w-96'>
-          <button className='btn btn-primary w-full'>Claim</button>
-        </div>
+        { address ?
+          <div className='w-96' onClick={() => handleSubmit()}>
+            <button className='btn btn-primary w-full'>Claim</button>
+          </div>
+          :
+          <CustomConnectButton/>
+        }
       </div>
     </div>
   );

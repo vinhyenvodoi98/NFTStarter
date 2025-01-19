@@ -62,3 +62,27 @@ export function stringToBigNumberishArray(message: string): BigNumberish[] {
 
   return bigNumberishArray;
 }
+
+type LongObject = {
+  low: number;
+  high: number;
+  unsigned: boolean;
+};
+
+export function convertToBigNumbers(
+  value: LongObject,
+  recovery: number,
+  s: LongObject
+): BigInt[] {
+  const toBigInt = (obj: LongObject): BigInt => {
+    const highPart = BigInt(obj.high) << 32n; // Shift high part by 32 bits
+    const lowPart = BigInt(obj.low >>> 0); // Convert low to unsigned and BigInt
+    return highPart | lowPart; // Combine high and low
+  };
+
+  const valueBigInt = toBigInt(value);
+  const recoveryBigInt = BigInt(recovery);
+  const sBigInt = toBigInt(s);
+
+  return [valueBigInt, recoveryBigInt, sBigInt];
+}

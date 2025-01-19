@@ -1,12 +1,15 @@
 'use client';
 
 import { CustomConnectButton } from '@/components/CustomConnectButton';
+import NFTImage from '@/components/NFTimage';
 import LayerOneProviders from '@/components/Providers/layerOneProvider';
 import { useAccount as useAccountLayerTwo } from '@/hooks/useAccount';
 import { ArrowsUpDownIcon } from '@heroicons/react/24/outline';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useState } from 'react';
-import { useAccount as useAccountLayerOne } from 'wagmi';
+import { useAccount as useAccountLayerOne, useReadContracts, useWriteContract } from 'wagmi';
+import Erc721Abi from '@/constant/erc721.json';
+import NFTBridgeEthereumAbi from '@/constant/NFTBridgeEthereum.json';
 
 export default function Bridge() {
   return <LayerOneProviders>
@@ -20,6 +23,7 @@ function UI() {
   const [recipientAddress, setRecipientAddress] = useState('');
   const { address: layerOneAddress } = useAccountLayerOne()
   const { address: layerTwoAddress } = useAccountLayerTwo()
+  const { writeContract } = useWriteContract()
   const [from, setFrom] = useState({
     name: "Statknet",
     image: "/svg/starknet.svg"
@@ -36,8 +40,46 @@ function UI() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ collection, tokenId , recipientAddress,  from, to});
-  };
+    if (from.name === "Ethereum") {
+      const data = writeContract({
+        abi: NFTBridgeEthereumAbi.abi as any,
+        address: '0xcE9A70720F347Bce53E83FEacAdaed720256C155',
+        functionName: 'lockNFT',
+        args: [
+          collection,
+          tokenId,
+          "0x00f1149cade9d692862ad41df96b108aa2c20af34f640457e781d166c98dc6b0",
+          "0x042efc59b4275b411038063887faff13c47ccdd99738181b9c9ec399a4b4eec8",
+          "0x299d4e1a3ad36ade127bf2c2bba7f5365146687beac9eed4e56119419cfbe98"
+        ],
+        value: 100000000000000n
+      })
+      console.log(data)
+    };
+  }
+
+  // Read token
+  const { data: token } = useReadContracts({
+    contracts: [
+      {
+        address: collection as `0x${string}`,
+        abi: Erc721Abi.abi as any,
+        functionName: 'name',
+      },
+      {
+        address: collection as `0x${string}`,
+        abi: Erc721Abi.abi as any,
+        functionName: 'tokenURI',
+        args: [tokenId],
+      },
+      {
+        address: collection as `0x${string}`,
+        abi: Erc721Abi.abi as any,
+        functionName: 'ownerOf',
+        args: [tokenId as any],
+      },
+    ],
+  });
 
   return (
     <div className="min-h-main mt-8 flex items-center justify-center">
@@ -52,17 +94,7 @@ function UI() {
         <form className="grid grid-cols-3 gap-6" onSubmit={handleSubmit}>
           {/* Image Upload */}
           <div className="h-96 w-full col-span-2 flex items-center justify-center">
-            <div className="card bg-base-100 w-96 shadow-xl">
-              <figure>
-                <img
-                  src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
-                  alt="Shoes" />
-              </figure>
-              <div className="card-body">
-                <h2 className="card-title">Shoes!</h2>
-                <p>If a dog chews shoes whose shoes does he choose?</p>
-              </div>
-            </div>
+            <NFTImage token={token}/>
           </div>
 
           <div>
