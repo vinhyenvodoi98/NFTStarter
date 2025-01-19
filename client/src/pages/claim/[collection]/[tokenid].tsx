@@ -5,7 +5,7 @@ import Loading from '@/components/Loading';
 import SimpleLoading from '@/components/SimpleLoading';
 import { useAccount } from '@/hooks/useAccount';
 import { uploadWeb3Storage, web3StorageLink } from '@/services/web3Storage';
-import { convertToBigNumbers, shortenAddress } from '@/utils/string';
+import { shortenAddress } from '@/utils/string';
 import { useContract, useSendTransaction, useUniversalDeployerContract } from '@starknet-react/core';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
