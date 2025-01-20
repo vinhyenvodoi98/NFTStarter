@@ -1,3 +1,4 @@
+#  NFTStarter
 🚀 About NFTStarter
 
 🌟 Project Overview
@@ -6,45 +7,19 @@ Build a nft lazy mint and bridge nft platoform
 
 📈 Key Features
 
-
-
-
-
 🏋️ Explain your features:
 
+- Lazy mint : Creator can create new nft without paying any fee but after create nft will not be on-chain. When someone claim nft then claimer will pay the fee to mint nft
 
-
-
-
-Lazy mint : Creator can create new nft without paying any fee but after create nft will not be on-chain. When someone claim nft then claimer will pay the fee to mint nft
-
-
-
-Bridge nft :
-
-
-
-
-
-From Ethereum Sepolia -> Starknet sepolia :check
-
-
-
-From Starknet Sepolia -> Ethereum Sepolia :in_progress
+- Bridge nft :
+  - From Ethereum Sepolia -> Starknet sepolia :check
+  - From Starknet Sepolia -> Ethereum Sepolia :in_progress
 
 📦 Tech Stack
 
-
-
-
-
 Frontend: Nextjs, @starknet-react/core
 
-
-
 Backend: Nextjs
-
-
 
 Database: Mongodb, web3 storage
 
