@@ -51,7 +51,7 @@ export default function HomePage() {
             <div className="transform h-52 border-base-content/20 hover:border-base-content/40 border bg-black row-span-1 col-span-1 relative">
               <div className='absolute z-0 top-0 h-full w-full bg-cover bg-center' style={{ backgroundImage : `url('./imgs/the-creation-adam.png')`}} />
               <div className='absolute p-8 h-full w-full flex flex-col justify-between gap-8'>
-                <h1 className="bottom-0 z-10 text-5xl font-bold text-left text-primary">Bridge NFT</h1>
+                <h1 className="bottom-0 z-10 text-2xl font-bold text-left text-primary">Bridge NFT</h1>
                 <Link href={`/bridge`}>
                   <button className="btn btn-secondary w-36">Bridge</button>
                 </Link>
@@ -60,18 +60,17 @@ export default function HomePage() {
 
             {/* Feature 4 */}
             <div className="ransform h-52 border-base-content/20 hover:border-base-content/40 border row-span-1 col-span-2">
-              <div className='h-full w-full bg-cover bg-center' style={{ backgroundImage : `url('./imgs/starknet-big.png')`}} />
+              <div className='h-full w-full bg-cover bg-center' style={{ backgroundImage : `url('/imgs/starknet-big.png')`}} />
             </div>
 
             <div className="p-6 transform h-full border-base-content/20 hover:border-base-content/40 border row-span-1 col-span-1">
               <h2 className="text-2xl font-semibold text-purple-600 mb-4">Explore NFT 🎉🎉🎉</h2>
               <div className='h-full flex items-center'>
-                
               </div>
             </div>
 
-            <div className="p-6 transform h-full border-base-content/20 hover:border-base-content/40 border row-span-1 col-span-1">
-
+            <div className="transform h-full border-base-content/20 hover:border-base-content/40 border row-span-1 col-span-1">
+              <div className='h-full w-full bg-cover bg-center' style={{ backgroundImage : `url('/imgs/studio-create.png')`}} />
             </div>
           </div>
         </div>

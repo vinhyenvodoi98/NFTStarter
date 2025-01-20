@@ -68,7 +68,7 @@ export default function Mint() {
   const { sendAsync, error } = useSendTransaction({
     calls:
       contract && address && nft
-        ? [contract.populate("lazy_mint", [address, "123456", nft.id, nft.msg_hash, nft.signature])]
+        ? [contract.populate("lazy_mint", [address, nft.msg_hash, nft.id, nft.msg_hash, nft.signature])]
         : undefined,
   });
 

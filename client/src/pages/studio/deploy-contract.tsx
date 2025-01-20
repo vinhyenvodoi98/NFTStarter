@@ -6,7 +6,7 @@ import { uploadWeb3Storage, web3StorageLink } from "@/services/web3Storage"
 import { useEffect, useState } from 'react';
 import { useAccount, useSendTransaction, useTransactionReceipt, useUniversalDeployerContract } from '@starknet-react/core';
 import { Collections } from '@/interfaces/Collections'
-import classhash from '../../../../contracts/cairo/classhash.json'
+import classhash from '../../../../contracts/cairo/config/config.json'
 import { CustomConnectButton } from '@/components/CustomConnectButton';
 import { toast } from 'react-toastify';
 

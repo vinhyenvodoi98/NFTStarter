@@ -6,10 +6,11 @@ import LayerOneProviders from '@/components/Providers/layerOneProvider';
 import { useAccount as useAccountLayerTwo } from '@/hooks/useAccount';
 import { ArrowsUpDownIcon } from '@heroicons/react/24/outline';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useAccount as useAccountLayerOne, useReadContracts, useWriteContract } from 'wagmi';
 import Erc721Abi from '@/constant/erc721.json';
 import NFTBridgeEthereumAbi from '@/constant/NFTBridgeEthereum.json';
+import { BRIDGE_CONTRACT } from '@/utils/constants';
 
 export default function Bridge() {
   return <LayerOneProviders>
@@ -25,12 +26,12 @@ function UI() {
   const { address: layerTwoAddress } = useAccountLayerTwo()
   const { writeContract } = useWriteContract()
   const [from, setFrom] = useState({
-    name: "Statknet",
-    image: "/svg/starknet.svg"
-  });
-  const [to, setTo] = useState({
     name: "Ethereum",
     image: "/svg/ethereum.svg"
+  });
+  const [to, setTo] = useState({
+    name: "Statknet",
+    image: "/svg/starknet.svg"
   });
 
   const swapStates = () => {
@@ -38,19 +39,18 @@ function UI() {
     setTo((prev) => ({ ...from }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const bridgeNFT = () => {
     if (from.name === "Ethereum") {
       const data = writeContract({
         abi: NFTBridgeEthereumAbi.abi as any,
-        address: '0xcE9A70720F347Bce53E83FEacAdaed720256C155',
+        address: BRIDGE_CONTRACT,
         functionName: 'lockNFT',
         args: [
           collection,
           tokenId,
           "0x00f1149cade9d692862ad41df96b108aa2c20af34f640457e781d166c98dc6b0",
           "0x042efc59b4275b411038063887faff13c47ccdd99738181b9c9ec399a4b4eec8",
-          "0x299d4e1a3ad36ade127bf2c2bba7f5365146687beac9eed4e56119419cfbe98"
+          recipientAddress
         ],
         value: 100000000000000n
       })
@@ -78,8 +78,38 @@ function UI() {
         functionName: 'ownerOf',
         args: [tokenId as any],
       },
+      {
+        address: collection as `0x${string}`,
+        abi: Erc721Abi as any,
+        functionName: 'getApproved',
+        args: [tokenId as any],
+      }
     ],
   });
+
+  const approveNFT = async () => {
+    const data = await writeContract({
+      abi: Erc721Abi.abi as any,
+      address: collection as `0x${string}`,
+      functionName: 'approve',
+      args: [
+        BRIDGE_CONTRACT,
+        tokenId,
+      ],
+    })
+    console.log(data)
+  }
+
+  const isApprove = useMemo(() => {
+    if (
+      token &&
+      token[3].result &&
+      (token[3].result.toString().toLocaleLowerCase() as any) ===
+        BRIDGE_CONTRACT.toLocaleLowerCase()
+    )
+      return true;
+    else false;
+  }, [token]);
 
   return (
     <div className="min-h-main mt-8 flex items-center justify-center">
@@ -91,7 +121,7 @@ function UI() {
           Easy to transfer NFTs Across Starknet and Ethereum.
         </p>
 
-        <form className="grid grid-cols-3 gap-6" onSubmit={handleSubmit}>
+        <div className="grid grid-cols-3 gap-6">
           {/* Image Upload */}
           <div className="h-96 w-full col-span-2 flex items-center justify-center">
             <NFTImage token={token}/>
@@ -110,7 +140,7 @@ function UI() {
 
             <div className='flex justify-center'>
               <button className="btn btn-circle btn-secondary"
-                onClick={swapStates}
+                onClick={() => swapStates()}
               >
                 <ArrowsUpDownIcon className='h-6 w-6'/>
               </button>
@@ -177,16 +207,22 @@ function UI() {
                     Bridge
                   </button>:
                   <CustomConnectButton/>
-                : layerOneAddress ? <button
-                    type="submit"
+                : layerOneAddress ?
+                  isApprove ?<button
+                    onClick={() => bridgeNFT()}
                     className="w-full btn btn-primary text-white py-2 px-4 rounded-full transition"
                   >
                     Bridge
+                  </button> : <button
+                    onClick={() => approveNFT()}
+                    className="w-full btn btn-primary text-white py-2 px-4 rounded-full transition"
+                  >
+                    Approve
                   </button> :
                   <ConnectButton/>
             }
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ export default async function handler(
         const signature: WeierstrassSignatureType = ec.starkCurve.sign(msg_hash, process.env.NEXT_PUBLIC_LAZY_MINT_PUBLIC_KEY as string);
 
         data.token.msg_hash = msg_hash
-        data.token.signature = [signature.r.toString(),signature.s.toString()]
+        data.token.signature = signature.toCompactHex()
         const result = await db.collection("collections").updateOne(
           {
             contractAddress: data.contractAddress ,
