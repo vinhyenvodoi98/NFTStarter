@@ -18,6 +18,7 @@ export default async function handler(
 
         data.token.msg_hash = msg_hash
         data.token.signature = signature.toCompactHex()
+        console.log(data.token)
         const result = await db.collection("collections").updateOne(
           {
             contractAddress: data.contractAddress ,

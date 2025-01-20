@@ -8,9 +8,9 @@ import { ArrowsUpDownIcon } from '@heroicons/react/24/outline';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useMemo, useState } from 'react';
 import { useAccount as useAccountLayerOne, useReadContracts, useWriteContract } from 'wagmi';
-import Erc721Abi from '@/constant/erc721.json';
 import NFTBridgeEthereumAbi from '@/constant/NFTBridgeEthereum.json';
 import { BRIDGE_CONTRACT } from '@/utils/constants';
+import { erc721Abi } from 'viem';
 
 export default function Bridge() {
   return <LayerOneProviders>
@@ -63,24 +63,24 @@ function UI() {
     contracts: [
       {
         address: collection as `0x${string}`,
-        abi: Erc721Abi.abi as any,
+        abi: erc721Abi as any,
         functionName: 'name',
       },
       {
         address: collection as `0x${string}`,
-        abi: Erc721Abi.abi as any,
+        abi: erc721Abi as any,
         functionName: 'tokenURI',
         args: [tokenId],
       },
       {
         address: collection as `0x${string}`,
-        abi: Erc721Abi.abi as any,
+        abi: erc721Abi as any,
         functionName: 'ownerOf',
         args: [tokenId as any],
       },
       {
         address: collection as `0x${string}`,
-        abi: Erc721Abi as any,
+        abi: erc721Abi as any,
         functionName: 'getApproved',
         args: [tokenId as any],
       }
@@ -88,8 +88,8 @@ function UI() {
   });
 
   const approveNFT = async () => {
-    const data = await writeContract({
-      abi: Erc721Abi.abi as any,
+    const data = writeContract({
+      abi: erc721Abi as any,
       address: collection as `0x${string}`,
       functionName: 'approve',
       args: [
@@ -110,6 +110,8 @@ function UI() {
       return true;
     else false;
   }, [token]);
+
+  console.log(token,isApprove)
 
   return (
     <div className="min-h-main mt-8 flex items-center justify-center">
