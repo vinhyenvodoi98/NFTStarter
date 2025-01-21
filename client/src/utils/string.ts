@@ -69,7 +69,7 @@ type LongObject = {
   unsigned: boolean;
 };
 
-export function generateRandomHex(length: number = 10): string {
+export function generateRandomHex(length: number): string {
   const hexChars = "0123456789abcdef";
   let result = "";
   for (let i = 0; i < length; i++) {
