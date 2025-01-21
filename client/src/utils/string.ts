@@ -68,3 +68,12 @@ type LongObject = {
   high: number;
   unsigned: boolean;
 };
+
+export function generateRandomHex(length: number = 10): string {
+  const hexChars = "0123456789abcdef";
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += hexChars[Math.floor(Math.random() * hexChars.length)];
+  }
+  return result;
+}

@@ -6,10 +6,12 @@ import SimpleLoading from '@/components/SimpleLoading';
 import { useAccount } from '@/hooks/useAccount';
 import { uploadWeb3Storage, web3StorageLink } from '@/services/web3Storage';
 import { shortenAddress } from '@/utils/string';
-import { useContract, useSendTransaction, useUniversalDeployerContract } from '@starknet-react/core';
+import { useContract, useSendTransaction, useTransactionReceipt, useUniversalDeployerContract } from '@starknet-react/core';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import type { Abi } from "starknet";
+import { stringToHex } from 'viem';
 
 const abi = [
   {
@@ -65,20 +67,24 @@ export default function Mint() {
     address: collection ? collection as `0x${string}` : "0x",
   });
 
-  const { sendAsync, error } = useSendTransaction({
+  const { sendAsync, data, error } = useSendTransaction({
     calls:
       contract && address && nft
-        ? [contract.populate("lazy_mint", [address, nft.msg_hash, nft.id, nft.msg_hash, nft.signature])]
+        ? [contract.populate("lazy_mint", [address, '0x68747470733a2f2f73616c2e766e2f47613561734a' , nft.id, nft.msg_hash, nft.signature])]
         : undefined,
   });
+
+  useEffect(() => {
+    if(data?.transaction_hash) {
+      toast.success(`Mint successfully hash : ${data?.transaction_hash}`)
+    }
+  }, [data?.transaction_hash])
 
   const handleSubmit = async () => {
     setStatus(1)
     await sendAsync()
     setStatus(0)
   };
-
-  console.log(nft)
 
   return (
     <div className="min-h-main flex items-center justify-center">

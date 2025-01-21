@@ -72,7 +72,7 @@ export default function DeployContract() {
         setStatus(0)
       }
       if(trxdata && trxdata.events[0] && status === 2) {
-        uploadData(cid, trxdata.events[0].from_address)
+        uploadData(cid, trxdata.events[0].data[0])
       }
     }, [trxdata])
 

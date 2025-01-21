@@ -1,5 +1,5 @@
 import { connectToDatabase } from "@/services/mongodb";
-import { stringToBigNumberishArray } from "@/utils/string";
+import { generateRandomHex, stringToBigNumberishArray } from "@/utils/string";
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { ec, WeierstrassSignatureType } from 'starknet';
 
@@ -13,12 +13,11 @@ export default async function handler(
     try {
       try {
         const data = JSON.parse(req.body)
-        const msg_hash = "0x123456"
-        const signature: WeierstrassSignatureType = ec.starkCurve.sign(msg_hash, process.env.NEXT_PUBLIC_LAZY_MINT_PUBLIC_KEY as string);
+        const msg_hash = `0x${generateRandomHex(10)}`
+        const signature: WeierstrassSignatureType = ec.starkCurve.sign(msg_hash, process.env.LAZY_MINT_PRIVATE_KEY as string);
 
         data.token.msg_hash = msg_hash
-        data.token.signature = signature.toCompactHex()
-        console.log(data.token)
+        data.token.signature = [signature.r.toString(),signature.s.toString()]
         const result = await db.collection("collections").updateOne(
           {
             contractAddress: data.contractAddress ,
